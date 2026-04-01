@@ -24,6 +24,9 @@ export const useMindMapStore = defineStore('mindMap', () => {
   // 是否正在编辑
   const isEditing = ref(false);
 
+  // 布局模式: 'logicalStructure' 从左到右, 'organizationStructure' 从上到下
+  const layout = ref<'logicalStructure' | 'organizationStructure'>('logicalStructure');
+
   // 计算属性
   const canUndo = computed(() => historyManager.value?.canUndo() || false);
   const canRedo = computed(() => historyManager.value?.canRedo() || false);
@@ -136,11 +139,22 @@ export const useMindMapStore = defineStore('mindMap', () => {
     selectedNode.value = null;
   }
 
+  /**
+   * 设置布局模式
+   */
+  function setLayout(newLayout: 'logicalStructure' | 'organizationStructure'): void {
+    layout.value = newLayout;
+    if (mindMapInstance.value) {
+      mindMapInstance.value.setLayout(newLayout);
+    }
+  }
+
   return {
     mindMapInstance,
     currentData,
     selectedNode,
     isEditing,
+    layout,
     canUndo,
     canRedo,
     initMindMap,
@@ -150,5 +164,6 @@ export const useMindMapStore = defineStore('mindMap', () => {
     recordHistory,
     getExportData,
     destroy,
+    setLayout,
   };
 });

@@ -16,6 +16,27 @@
 
       <el-divider direction="vertical" />
 
+      <el-button-group>
+        <el-tooltip content="从左到右布局" placement="bottom">
+          <el-button
+            :type="currentLayout === 'logicalStructure' ? 'primary' : 'default'"
+            @click="handleLayoutChange('logicalStructure')"
+          >
+            <el-icon><DArrowRight /></el-icon>
+          </el-button>
+        </el-tooltip>
+        <el-tooltip content="从上到下布局" placement="bottom">
+          <el-button
+            :type="currentLayout === 'organizationStructure' ? 'primary' : 'default'"
+            @click="handleLayoutChange('organizationStructure')"
+          >
+            <el-icon><Bottom /></el-icon>
+          </el-button>
+        </el-tooltip>
+      </el-button-group>
+
+      <el-divider direction="vertical" />
+
       <el-tooltip content="保存 (Ctrl+S)" placement="bottom">
         <el-button type="primary" :disabled="!activeFile" @click="handleSave">
           <el-icon><DocumentChecked /></el-icon>
@@ -87,6 +108,8 @@ import {
   Upload,
   Download,
   ArrowDown,
+  DArrowRight,
+  Bottom,
 } from '@element-plus/icons-vue';
 import { ElMessage } from 'element-plus';
 import { useMindMapStore, useFileListStore } from '@/stores';
@@ -103,7 +126,7 @@ const emit = defineEmits<{
 const mindMapStore = useMindMapStore();
 const fileListStore = useFileListStore();
 const { activeFile } = storeToRefs(fileListStore);
-const { canUndo, canRedo } = storeToRefs(mindMapStore);
+const { canUndo, canRedo, layout: currentLayout } = storeToRefs(mindMapStore);
 
 const saveDialogVisible = ref(false);
 const defaultSaveName = ref('');
@@ -115,6 +138,10 @@ function handleUndo() {
 
 function handleRedo() {
   mindMapStore.redo();
+}
+
+function handleLayoutChange(layout: 'logicalStructure' | 'organizationStructure') {
+  mindMapStore.setLayout(layout);
 }
 
 function handleSave() {

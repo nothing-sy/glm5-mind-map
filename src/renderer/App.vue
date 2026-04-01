@@ -10,6 +10,8 @@ import {
   Download,
   ArrowDown,
   Plus,
+  DArrowRight,
+  Bottom,
 } from '@element-plus/icons-vue';
 import Sidebar from '@/components/sidebar/Sidebar.vue';
 import MindMapContainer from '@/components/mindmap/MindMapContainer.vue';
@@ -22,7 +24,7 @@ import type { MultiRootMindMapData } from '@/types';
 const mindMapStore = useMindMapStore();
 const fileListStore = useFileListStore();
 const { activeFile, files } = storeToRefs(fileListStore);
-const { canUndo, canRedo } = storeToRefs(mindMapStore);
+const { canUndo, canRedo, layout } = storeToRefs(mindMapStore);
 
 const mindMapContainerRef = ref<InstanceType<typeof MindMapContainer> | null>(null);
 
@@ -233,6 +235,11 @@ function handleUndo() {
 function handleRedo() {
   mindMapStore.redo();
 }
+
+// 切换布局
+function handleLayoutChange(newLayout: 'logicalStructure' | 'organizationStructure') {
+  mindMapStore.setLayout(newLayout);
+}
 </script>
 
 <template>
@@ -252,6 +259,27 @@ function handleRedo() {
             <el-tooltip content="重做 (Ctrl+Y)" placement="bottom">
               <el-button :disabled="!canRedo" @click="handleRedo">
                 <el-icon><Right /></el-icon>
+              </el-button>
+            </el-tooltip>
+          </el-button-group>
+
+          <el-divider direction="vertical" />
+
+          <el-button-group>
+            <el-tooltip content="从左到右布局" placement="bottom">
+              <el-button
+                :type="layout === 'logicalStructure' ? 'primary' : 'default'"
+                @click="handleLayoutChange('logicalStructure')"
+              >
+                <el-icon><DArrowRight /></el-icon>
+              </el-button>
+            </el-tooltip>
+            <el-tooltip content="从上到下布局" placement="bottom">
+              <el-button
+                :type="layout === 'organizationStructure' ? 'primary' : 'default'"
+                @click="handleLayoutChange('organizationStructure')"
+              >
+                <el-icon><Bottom /></el-icon>
               </el-button>
             </el-tooltip>
           </el-button-group>

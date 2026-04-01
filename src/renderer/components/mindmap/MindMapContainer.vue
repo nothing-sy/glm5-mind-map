@@ -35,6 +35,7 @@ const mindMapRef = ref<HTMLElement | null>(null);
 const mindMapStore = useMindMapStore();
 const fileListStore = useFileListStore();
 const { activeFile } = storeToRefs(fileListStore);
+const { layout } = storeToRefs(mindMapStore);
 
 // 右键菜单状态
 const contextMenuVisible = ref(false);
@@ -80,10 +81,10 @@ function initMindMap() {
   mindMapInstance = new MindMap({
     el: mindMapRef.value,
     data: toSimpleMindMapFormat(initialData),
-    layout: 'mindMap',
+    layout: layout.value,
     theme: 'default',
     initRootNodePosition: ['center', 'center'],
-    enableFreeDrag: true,
+    enableFreeDrag: false,
     mousewheelAction: 'zoom', // 滚轮缩放
     mouseScaleCenterUseMousePosition: true, // 以鼠标位置为中心缩放
   });
@@ -164,12 +165,12 @@ function handleContextMenuAction(action: string, nodeData: any) {
 }
 
 function addChildNode(parentNode: any) {
-  mindMapInstance?.execCommand('INSERT_CHILD_NODE', false, [], parentNode);
+  mindMapInstance?.execCommand('INSERT_CHILD_NODE', false, [parentNode]);
   mindMapStore.recordHistory('添加子节点');
 }
 
 function addSiblingNode(node: any) {
-  mindMapInstance?.execCommand('INSERT_NODE', false, [], node);
+  mindMapInstance?.execCommand('INSERT_NODE', false, [node]);
   mindMapStore.recordHistory('添加同级节点');
 }
 
@@ -197,7 +198,7 @@ function cutNode(node: any) {
 function pasteNode(targetNode: any) {
   if (!clipboardNode) return;
   const newNode = JSON.parse(JSON.stringify(clipboardNode));
-  mindMapInstance?.execCommand('INSERT_CHILD_NODE', false, newNode, targetNode);
+  mindMapInstance?.execCommand('INSERT_CHILD_NODE', false, [targetNode], newNode);
   mindMapStore.recordHistory('粘贴节点');
 }
 
