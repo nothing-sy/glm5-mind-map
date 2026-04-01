@@ -10,4 +10,12 @@ export default defineConfig({
       '@': resolve(__dirname, 'src/renderer'),
     },
   },
+  optimizeDeps: {
+    include: ['simple-mind-map'],
+  },
+  build: {
+    commonjsOptions: {
+      transformMixedEsModules: true,
+    },
+  },
 });

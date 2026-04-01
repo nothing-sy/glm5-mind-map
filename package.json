@@ -32,6 +32,7 @@
     "@electron-forge/plugin-vite": "^7.11.1",
     "@electron/fuses": "^1.8.0",
     "@types/electron-squirrel-startup": "^1.0.2",
+    "@types/uuid": "^11.0.0",
     "@typescript-eslint/eslint-plugin": "^5.62.0",
     "@typescript-eslint/parser": "^5.62.0",
     "@vitejs/plugin-vue": "^6.0.5",
@@ -43,7 +44,12 @@
     "vue-tsc": "^3.2.6"
   },
   "dependencies": {
+    "@element-plus/icons-vue": "^2.3.2",
     "electron-squirrel-startup": "^1.0.1",
+    "element-plus": "^2.13.6",
+    "pinia": "^3.0.4",
+    "simple-mind-map": "^0.14.0-fix.2",
+    "uuid": "^13.0.0",
     "vue": "^3.5.31"
   }
 }
