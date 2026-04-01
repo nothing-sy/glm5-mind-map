@@ -1,9 +1,19 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue';
 import { ElMessage } from 'element-plus';
+import {
+  Back,
+  Right,
+  DocumentChecked,
+  FolderOpened,
+  Upload,
+  Download,
+  ArrowDown,
+  Plus,
+} from '@element-plus/icons-vue';
 import Sidebar from '@/components/sidebar/Sidebar.vue';
 import MindMapContainer from '@/components/mindmap/MindMapContainer.vue';
-import AppHeader from '@/components/common/AppHeader.vue';
+import SaveDialog from '@/components/common/SaveDialog.vue';
 import { useMindMapStore, useFileListStore } from '@/stores';
 import { storeToRefs } from 'pinia';
 import { validateMindMapData } from '@/utils/mindMapHelper';
@@ -15,6 +25,11 @@ const { activeFile, files } = storeToRefs(fileListStore);
 const { canUndo, canRedo } = storeToRefs(mindMapStore);
 
 const mindMapContainerRef = ref<InstanceType<typeof MindMapContainer> | null>(null);
+
+// 保存对话框状态
+const saveDialogVisible = ref(false);
+const defaultSaveName = ref('');
+const isSaveAs = ref(false);
 
 // 初始化：创建第一个文件
 onMounted(() => {
@@ -168,11 +183,28 @@ async function handleSave() {
     } catch (error) {
       ElMessage.error('保存失败');
     }
+  } else {
+    // 新文件，弹出保存对话框
+    isSaveAs.value = false;
+    defaultSaveName.value = activeFile.value.name;
+    saveDialogVisible.value = true;
   }
 }
 
 // 另存为
-async function handleSaveAs(name: string) {
+function handleSaveAs() {
+  if (!activeFile.value) return;
+  isSaveAs.value = true;
+  defaultSaveName.value = activeFile.value.name;
+  saveDialogVisible.value = true;
+}
+
+// 确认保存
+function handleSaveConfirm(name: string) {
+  doSaveAs(name);
+}
+
+async function doSaveAs(name: string) {
   if (!activeFile.value) return;
 
   try {
@@ -191,20 +223,101 @@ async function handleSaveAs(name: string) {
     ElMessage.error('保存失败');
   }
 }
+
+// 撤销
+function handleUndo() {
+  mindMapStore.undo();
+}
+
+// 重做
+function handleRedo() {
+  mindMapStore.redo();
+}
 </script>
 
 <template>
   <div class="app-container">
-    <AppHeader
-      @import="handleImport"
-      @export="handleExport"
-      @save="handleSave"
-      @save-as="handleSaveAs"
-    />
+    <Sidebar @create="handleCreate" @import="handleImportFromDrop" />
 
-    <div class="main-content">
-      <Sidebar @create="handleCreate" @import="handleImportFromDrop" />
+    <div class="right-panel">
+      <!-- 工具栏 -->
+      <div class="toolbar">
+        <div class="toolbar-left">
+          <el-button-group>
+            <el-tooltip content="撤销 (Ctrl+Z)" placement="bottom">
+              <el-button :disabled="!canUndo" @click="handleUndo">
+                <el-icon><Back /></el-icon>
+              </el-button>
+            </el-tooltip>
+            <el-tooltip content="重做 (Ctrl+Y)" placement="bottom">
+              <el-button :disabled="!canRedo" @click="handleRedo">
+                <el-icon><Right /></el-icon>
+              </el-button>
+            </el-tooltip>
+          </el-button-group>
 
+          <el-divider direction="vertical" />
+
+          <el-tooltip content="新建" placement="bottom">
+            <el-button @click="handleCreate">
+              <el-icon><Plus /></el-icon>
+            </el-button>
+          </el-tooltip>
+
+          <el-tooltip content="保存 (Ctrl+S)" placement="bottom">
+            <el-button type="primary" :disabled="!activeFile" @click="handleSave">
+              <el-icon><DocumentChecked /></el-icon>
+              保存
+            </el-button>
+          </el-tooltip>
+
+          <el-tooltip content="另存为" placement="bottom">
+            <el-button :disabled="!activeFile" @click="handleSaveAs">
+              <el-icon><FolderOpened /></el-icon>
+              另存为
+            </el-button>
+          </el-tooltip>
+        </div>
+
+        <div class="toolbar-center">
+          <span class="file-name" v-if="activeFile">
+            {{ activeFile.name }}
+            <span v-if="activeFile.isDirty" class="dirty-mark">*</span>
+          </span>
+        </div>
+
+        <div class="toolbar-right">
+          <el-dropdown trigger="click" @command="handleImport">
+            <el-button>
+              <el-icon><Upload /></el-icon>
+              导入
+              <el-icon class="el-icon--right"><ArrowDown /></el-icon>
+            </el-button>
+            <template #dropdown>
+              <el-dropdown-menu>
+                <el-dropdown-item command="json">JSON 文件</el-dropdown-item>
+              </el-dropdown-menu>
+            </template>
+          </el-dropdown>
+
+          <el-dropdown trigger="click" @command="handleExport" :disabled="!activeFile">
+            <el-button>
+              <el-icon><Download /></el-icon>
+              导出
+              <el-icon class="el-icon--right"><ArrowDown /></el-icon>
+            </el-button>
+            <template #dropdown>
+              <el-dropdown-menu>
+                <el-dropdown-item command="json">JSON 文件</el-dropdown-item>
+                <el-dropdown-item command="png">PNG 图片</el-dropdown-item>
+                <el-dropdown-item command="svg">SVG 图片</el-dropdown-item>
+              </el-dropdown-menu>
+            </template>
+          </el-dropdown>
+        </div>
+      </div>
+
+      <!-- 思维导图区域 -->
       <div class="mindmap-area">
         <MindMapContainer
           v-if="activeFile"
@@ -217,6 +330,13 @@ async function handleSaveAs(name: string) {
         </div>
       </div>
     </div>
+
+    <!-- 保存对话框 -->
+    <SaveDialog
+      v-model:visible="saveDialogVisible"
+      :default-name="defaultSaveName"
+      @confirm="handleSaveConfirm"
+    />
   </div>
 </template>
 
@@ -225,14 +345,49 @@ async function handleSaveAs(name: string) {
   width: 100%;
   height: 100vh;
   display: flex;
+  overflow: hidden;
+}
+
+.right-panel {
+  flex: 1;
+  display: flex;
   flex-direction: column;
   overflow: hidden;
 }
 
-.main-content {
-  flex: 1;
+.toolbar {
+  height: 50px;
+  padding: 0 16px;
+  background-color: #fff;
+  border-bottom: 1px solid #e4e7ed;
   display: flex;
-  overflow: hidden;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+}
+
+.toolbar-left,
+.toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.toolbar-center {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.file-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: #303133;
+}
+
+.dirty-mark {
+  color: #f56c6c;
+  margin-left: 2px;
 }
 
 .mindmap-area {

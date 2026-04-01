@@ -2,10 +2,6 @@
   <div class="sidebar">
     <div class="sidebar-header">
       <span class="title">思维导图列表</span>
-      <el-button type="primary" size="small" @click="handleCreate">
-        <el-icon><Plus /></el-icon>
-        新建
-      </el-button>
     </div>
 
     <div
@@ -24,7 +20,7 @@
 
       <div v-if="files.length === 0" class="empty-tip">
         <p>暂无思维导图</p>
-        <p>点击上方"新建"按钮创建</p>
+        <p>点击右侧"新建"按钮创建</p>
         <p>或拖入 JSON 文件导入</p>
       </div>
     </div>
@@ -38,7 +34,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import { Plus, Upload } from '@element-plus/icons-vue';
+import { Upload } from '@element-plus/icons-vue';
 import { ElMessage } from 'element-plus';
 import MindMapList from './MindMapList.vue';
 import { useFileListStore } from '@/stores';
@@ -54,10 +50,6 @@ const fileListStore = useFileListStore();
 const { files, activeFileId } = storeToRefs(fileListStore);
 
 const isDragOver = ref(false);
-
-function handleCreate() {
-  emit('create');
-}
 
 function handleSelect(fileId: string) {
   fileListStore.switchFile(fileId);

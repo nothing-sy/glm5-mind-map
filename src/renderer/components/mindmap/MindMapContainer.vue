@@ -70,11 +70,21 @@ onMounted(() => {
   if (mindMapRef.value) {
     initMindMap();
   }
+  // 监听窗口大小变化
+  window.addEventListener('resize', handleResize);
 });
 
 onUnmounted(() => {
   mindMapStore.destroy();
+  window.removeEventListener('resize', handleResize);
 });
+
+// 处理窗口大小变化
+function handleResize() {
+  if (mindMapInstance) {
+    mindMapInstance.resize();
+  }
+}
 
 function initMindMap() {
   if (!mindMapRef.value) return;
@@ -88,6 +98,8 @@ function initMindMap() {
     theme: 'default',
     initRootNodePosition: ['center', 'center'],
     enableFreeDrag: true,
+    mousewheelAction: 'zoom', // 滚轮缩放
+    mouseScaleCenterUseMousePosition: true, // 以鼠标位置为中心缩放
   });
 
   // 初始化 store

@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, dialog, globalShortcut } from 'electron';
+import { app, BrowserWindow, ipcMain, dialog, globalShortcut, Menu } from 'electron';
 import path from 'node:path';
 import fs from 'node:fs/promises';
 import started from 'electron-squirrel-startup';
@@ -11,6 +11,9 @@ if (started) {
 let mainWindow: BrowserWindow | null = null;
 
 const createWindow = () => {
+  // 隐藏菜单栏
+  Menu.setApplicationMenu(null);
+
   // Create the browser window.
   mainWindow = new BrowserWindow({
     width: 1200,
