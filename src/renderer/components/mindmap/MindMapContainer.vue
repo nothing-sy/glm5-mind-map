@@ -11,15 +11,6 @@
       @action="handleContextMenuAction"
       @close="closeContextMenu"
     />
-
-    <!-- 节点编辑器 -->
-    <NodeEditor
-      v-if="editingNode"
-      :node="editingNode"
-      :position="editingPosition"
-      @save="handleSaveEdit"
-      @cancel="handleCancelEdit"
-    />
   </div>
 </template>
 
@@ -31,10 +22,9 @@ import Select from 'simple-mind-map/src/plugins/Select';
 import Export from 'simple-mind-map/src/plugins/Export';
 import { useMindMapStore, useFileListStore } from '@/stores';
 import { storeToRefs } from 'pinia';
-import { toSimpleMindMapFormat, fromSimpleMindMapFormat } from '@/utils/mindMapHelper';
-import type { MindMapNode, MultiRootMindMapData } from '@/types';
+import { toSimpleMindMapFormat, fromSimpleMindMapFormat, createEmptyMindMapData } from '@/utils/mindMapHelper';
+import type { MindMapNode } from '@/types';
 import ContextMenu from '../common/ContextMenu.vue';
-import NodeEditor from './NodeEditor.vue';
 
 // 注册插件
 MindMap.usePlugin(Drag);
@@ -51,10 +41,6 @@ const contextMenuVisible = ref(false);
 const contextMenuX = ref(0);
 const contextMenuY = ref(0);
 const selectedNodeData = ref<any>(null);
-
-// 编辑状态
-const editingNode = ref<MindMapNode | null>(null);
-const editingPosition = ref({ x: 0, y: 0 });
 
 // 思维导图实例
 let mindMapInstance: any = null;
@@ -89,11 +75,11 @@ function handleResize() {
 function initMindMap() {
   if (!mindMapRef.value) return;
 
-  const initialData = activeFile.value?.data;
+  const initialData = activeFile.value?.data || createEmptyMindMapData();
 
   mindMapInstance = new MindMap({
     el: mindMapRef.value,
-    data: initialData ? toSimpleMindMapFormat(initialData) : undefined,
+    data: toSimpleMindMapFormat(initialData),
     layout: 'mindMap',
     theme: 'default',
     initRootNodePosition: ['center', 'center'],
@@ -111,12 +97,6 @@ function initMindMap() {
 
 function bindEvents() {
   if (!mindMapInstance) return;
-
-  // 节点双击事件
-  mindMapInstance.on('node_dblclick', (node: any, e: MouseEvent) => {
-    e.stopPropagation();
-    startEditing(node);
-  });
 
   // 节点右键菜单
   mindMapInstance.on('node_contextmenu', (e: MouseEvent, node: any) => {
@@ -162,7 +142,8 @@ function handleContextMenuAction(action: string, nodeData: any) {
       addSiblingNode(nodeData);
       break;
     case 'edit':
-      startEditing(nodeData);
+      // 使用 simple-mind-map 内置的编辑功能
+      mindMapInstance?.renderer.textEdit.show({ node: nodeData });
       break;
     case 'delete':
       deleteNode(nodeData);
@@ -218,30 +199,6 @@ function pasteNode(targetNode: any) {
   const newNode = JSON.parse(JSON.stringify(clipboardNode));
   mindMapInstance?.execCommand('INSERT_CHILD_NODE', false, newNode, targetNode);
   mindMapStore.recordHistory('粘贴节点');
-}
-
-function startEditing(node: any) {
-  editingNode.value = node.nodeData || node;
-  // 获取节点位置用于定位编辑器
-  const rect = mindMapRef.value?.getBoundingClientRect();
-  if (rect && node) {
-    editingPosition.value = {
-      x: rect.width / 2,
-      y: rect.height / 2,
-    };
-  }
-}
-
-function handleSaveEdit(newText: string) {
-  if (editingNode.value) {
-    mindMapInstance?.execCommand('SET_NODE_TEXT', editingNode.value, newText);
-    mindMapStore.recordHistory('编辑节点');
-  }
-  editingNode.value = null;
-}
-
-function handleCancelEdit() {
-  editingNode.value = null;
 }
 
 // 暴露方法给父组件

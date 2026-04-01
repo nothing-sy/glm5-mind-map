@@ -33,7 +33,7 @@
         <span class="shortcut">Ctrl+C</span>
       </div>
       <div class="menu-item" @click="handleAction('cut')">
-        <el-icon><Scissors /></el-icon>
+        <el-icon><Scissor /></el-icon>
         <span>剪切</span>
         <span class="shortcut">Ctrl+X</span>
       </div>

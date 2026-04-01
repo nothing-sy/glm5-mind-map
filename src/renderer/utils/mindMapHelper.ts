@@ -38,9 +38,14 @@ export function createEmptyMindMapData(name: string = '未命名思维导图'): 
 
 /**
  * 将多根节点数据转换为 simple-mind-map 可识别的格式
- * 创建一个隐藏的虚拟根节点包裹所有根节点
+ * 单根节点直接返回，多根节点创建虚拟根节点包裹
  */
 export function toSimpleMindMapFormat(data: MultiRootMindMapData): MindMapNode {
+  // 单根节点直接返回，避免显示虚拟根节点
+  if (data.roots.length === 1) {
+    return data.roots[0];
+  }
+  // 多根节点时创建虚拟根节点包裹
   return {
     data: {
       id: VIRTUAL_ROOT_ID,
