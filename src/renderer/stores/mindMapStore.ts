@@ -21,6 +21,9 @@ export const useMindMapStore = defineStore('mindMap', () => {
   // 选中的节点
   const selectedNode = ref<MindMapNode | null>(null);
 
+  // 浮动工具栏状态
+  const floatToolbarVisible = ref(false);
+
   // 是否正在编辑
   const isEditing = ref(false);
 
@@ -65,11 +68,13 @@ export const useMindMapStore = defineStore('mindMap', () => {
     });
 
     // 节点激活事件
-    instance.on('node_active', (node: any, activeNodeList: any[]) => {
+    instance.on('node_active', (_node: any, activeNodeList: any[]) => {
       if (activeNodeList.length > 0) {
         selectedNode.value = activeNodeList[0];
+        floatToolbarVisible.value = true;
       } else {
         selectedNode.value = null;
+        floatToolbarVisible.value = false;
       }
     });
   }
@@ -149,6 +154,13 @@ export const useMindMapStore = defineStore('mindMap', () => {
     }
   }
 
+  /**
+   * 隐藏浮动工具栏
+   */
+  function hideFloatToolbar(): void {
+    floatToolbarVisible.value = false;
+  }
+
   return {
     mindMapInstance,
     currentData,
@@ -157,6 +169,7 @@ export const useMindMapStore = defineStore('mindMap', () => {
     layout,
     canUndo,
     canRedo,
+    floatToolbarVisible,
     initMindMap,
     setData,
     undo,
@@ -165,5 +178,6 @@ export const useMindMapStore = defineStore('mindMap', () => {
     getExportData,
     destroy,
     setLayout,
+    hideFloatToolbar,
   };
 });

@@ -11,6 +11,13 @@
       @action="handleContextMenuAction"
       @close="closeContextMenu"
     />
+
+    <!-- 浮动工具栏 -->
+    <NodeFloatToolbar
+      :visible="floatToolbarVisible"
+      :selected-node="selectedNode"
+      @close="hideFloatToolbar"
+    />
   </div>
 </template>
 
@@ -25,6 +32,7 @@ import { storeToRefs } from 'pinia';
 import { toSimpleMindMapFormat, fromSimpleMindMapFormat, createEmptyMindMapData } from '@/utils/mindMapHelper';
 import type { MindMapNode } from '@/types';
 import ContextMenu from '../common/ContextMenu.vue';
+import NodeFloatToolbar from '../common/NodeFloatToolbar.vue';
 
 // 注册插件
 MindMap.usePlugin(Drag);
@@ -35,7 +43,8 @@ const mindMapRef = ref<HTMLElement | null>(null);
 const mindMapStore = useMindMapStore();
 const fileListStore = useFileListStore();
 const { activeFile } = storeToRefs(fileListStore);
-const { layout } = storeToRefs(mindMapStore);
+const { layout, floatToolbarVisible, selectedNode } = storeToRefs(mindMapStore);
+const { hideFloatToolbar } = mindMapStore;
 
 // 右键菜单状态
 const contextMenuVisible = ref(false);

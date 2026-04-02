@@ -4,7 +4,10 @@
       "Bash(npm run:*)",
       "Bash(npm start:*)",
       "mcp__web-reader__webReader",
-      "Bash(git pull:*)"
+      "Bash(git pull:*)",
+      "mcp__zread__get_repo_structure",
+      "mcp__zread__read_file",
+      "mcp__github__search_code"
     ]
   }
 }

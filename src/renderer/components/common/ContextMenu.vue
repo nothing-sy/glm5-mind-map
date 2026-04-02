@@ -16,36 +16,10 @@
         <span class="shortcut">Enter</span>
       </div>
       <div class="menu-divider"></div>
-      <div class="menu-item" @click="handleAction('edit')">
-        <el-icon><Edit /></el-icon>
-        <span>编辑节点</span>
-        <span class="shortcut">F2</span>
-      </div>
       <div class="menu-item" @click="handleAction('delete')">
         <el-icon><Delete /></el-icon>
         <span>删除节点</span>
         <span class="shortcut">Delete</span>
-      </div>
-      <div class="menu-divider"></div>
-      <div class="menu-item" @click="handleAction('copy')">
-        <el-icon><CopyDocument /></el-icon>
-        <span>复制</span>
-        <span class="shortcut">Ctrl+C</span>
-      </div>
-      <div class="menu-item" @click="handleAction('cut')">
-        <el-icon><Scissor /></el-icon>
-        <span>剪切</span>
-        <span class="shortcut">Ctrl+X</span>
-      </div>
-      <div class="menu-item" @click="handleAction('paste')">
-        <el-icon><Document /></el-icon>
-        <span>粘贴</span>
-        <span class="shortcut">Ctrl+V</span>
-      </div>
-      <div class="menu-divider"></div>
-      <div class="menu-item" @click="handleAction('addRoot')">
-        <el-icon><CirclePlus /></el-icon>
-        <span>添加根节点</span>
       </div>
     </div>
   </Teleport>
@@ -53,16 +27,7 @@
 
 <script setup lang="ts">
 import { onMounted, onUnmounted } from 'vue';
-import {
-  Plus,
-  DocumentCopy,
-  Edit,
-  Delete,
-  CopyDocument,
-  Scissor,
-  Document,
-  CirclePlus,
-} from '@element-plus/icons-vue';
+import { Plus, DocumentCopy, Delete } from '@element-plus/icons-vue';
 
 interface Props {
   visible: boolean;
