@@ -112,6 +112,16 @@ function registerIpcHandlers() {
       return false;
     }
   });
+
+  // 重命名文件
+  ipcMain.handle('file:rename', async (_, oldPath: string, newPath: string) => {
+    try {
+      await fs.rename(oldPath, newPath);
+      return { success: true };
+    } catch (error) {
+      return { success: false, error: error instanceof Error ? error.message : '重命名失败' };
+    }
+  });
 }
 
 // 注册快捷键

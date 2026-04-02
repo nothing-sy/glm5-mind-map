@@ -29,6 +29,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // 检查文件是否存在
   fileExists: (filePath: string) => ipcRenderer.invoke('file:exists', filePath),
 
+  // 重命名文件
+  renameFile: (oldPath: string, newPath: string) =>
+    ipcRenderer.invoke('file:rename', oldPath, newPath),
+
   // 快捷键事件监听
   onSaveShortcut: (callback: () => void) => {
     const handler = () => callback();

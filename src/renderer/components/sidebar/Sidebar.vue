@@ -16,6 +16,7 @@
         :active-file-id="activeFileId"
         @select="handleSelect"
         @close="handleClose"
+        @rename="handleRename"
       />
 
       <div v-if="files.length === 0" class="empty-tip">
@@ -57,6 +58,39 @@ function handleSelect(fileId: string) {
 
 function handleClose(fileId: string) {
   fileListStore.closeFile(fileId);
+}
+
+async function handleRename(fileId: string, newName: string) {
+  const file = files.value.find(f => f.id === fileId);
+  if (!file) return;
+
+  // 如果文件已保存到磁盘，需要重命名磁盘文件
+  if (file.path) {
+    const oldPath = file.path;
+    const dir = oldPath.substring(0, oldPath.lastIndexOf('\\') || oldPath.lastIndexOf('/'));
+    const newPath = `${dir}\\${newName}.json`;
+
+    // 检查新文件名是否已存在
+    const exists = await window.electronAPI.fileExists(newPath);
+    if (exists) {
+      ElMessage.error('文件名已存在');
+      return;
+    }
+
+    // 重命名磁盘文件
+    const result = await window.electronAPI.renameFile(oldPath, newPath);
+    if (!result.success) {
+      ElMessage.error('重命名文件失败: ' + result.error);
+      return;
+    }
+
+    // 更新 store 中的文件路径和名称
+    fileListStore.markFileSaved(fileId, newPath, newName);
+    ElMessage.success('重命名成功');
+  } else {
+    // 文件未保存到磁盘，只更新名称
+    fileListStore.renameFile(fileId, newName);
+  }
 }
 
 function handleDragOver(e: DragEvent) {

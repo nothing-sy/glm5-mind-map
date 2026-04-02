@@ -42,12 +42,18 @@ interface WriteFileResult {
   error?: string;
 }
 
+interface RenameFileResult {
+  success: boolean;
+  error?: string;
+}
+
 interface ElectronAPI {
   saveFile: (options: SaveFileOptions) => Promise<SaveFileResult>;
   openFile: (options?: OpenFileOptions) => Promise<OpenFileResult>;
   readFile: (filePath: string) => Promise<ReadFileResult>;
   writeFile: (filePath: string, content: string) => Promise<WriteFileResult>;
   fileExists: (filePath: string) => Promise<boolean>;
+  renameFile: (oldPath: string, newPath: string) => Promise<RenameFileResult>;
   onSaveShortcut: (callback: () => void) => () => void;
   onUndoShortcut: (callback: () => void) => () => void;
   onRedoShortcut: (callback: () => void) => () => void;

@@ -3,7 +3,8 @@
     "allow": [
       "Bash(npm run:*)",
       "Bash(npm start:*)",
-      "mcp__web-reader__webReader"
+      "mcp__web-reader__webReader",
+      "Bash(git pull:*)"
     ]
   }
 }

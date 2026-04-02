@@ -210,6 +210,8 @@ async function doSaveAs(name: string) {
   if (!activeFile.value) return;
 
   try {
+    // 将文件名写入到 JSON 数据中
+    activeFile.value.data.name = name;
     const jsonContent = JSON.stringify(activeFile.value.data, null, 2);
     const result = await window.electronAPI.saveFile({
       defaultPath: `${name}.json`,
