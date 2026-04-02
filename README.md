@@ -7,7 +7,7 @@
 **作者有话说：本项目我只负责了以下几件事**
 - 使用 npx create-electron-app@latest my-new-app --template=vite-typescript 创建项目 （由于electron的坑太多了，AI完全无法自主搭建成功基本框架，总会有各种各样的依赖或者版本或者其他问题，始终无法修复，所以选择electron自带的脚手架搭建）
 - QA方式提需求，反馈问题，我没有任何代码review行为
-- 写下这段话，其余内容均有AI生成，本人并不清楚任何代码内容，有兴趣的可以fork下来，根据个人需求优化。
+- 写下这段话，其余内容均由AI生成，本人并不清楚任何代码内容，有兴趣的可以fork下来，根据个人需求优化。
 
 ## 功能特性
 
@@ -79,22 +79,82 @@ npm run typecheck
 
 ```
 glm5-mind-map/
-├── src/
-│   ├── main.ts              # Electron 主进程
-│   ├── preload.ts           # 预加载脚本
-│   └── renderer/            # 渲染进程 (Vue 3 应用)
-│       ├── main.ts          # Vue 应用入口
-│       ├── App.vue          # 根组件
-│       ├── components/      # 可复用组件
-│       ├── views/           # 页面组件
-│       ├── stores/          # Pinia 状态管理
-│       ├── utils/           # 工具函数
-│       └── types/           # TypeScript 类型定义
-├── index.html               # HTML 入口
-├── forge.config.ts          # Electron Forge 配置
-├── vite.*.config.mts        # Vite 构建配置
-└── tsconfig.json            # TypeScript 配置
+├── .github/                    # GitHub 配置
+│   └── workflows/              # GitHub Actions 工作流
+│       └── release.yml         # 自动发布工作流
+├── public/                     # 静态资源目录
+│   └── favicon.svg             # 应用图标
+├── src/                        # 源代码目录
+│   ├── main.ts                 # Electron 主进程入口
+│   ├── preload.ts              # 预加载脚本（主进程与渲染进程通信桥梁）
+│   └── renderer/               # 渲染进程（Vue 3 前端应用）
+│       ├── main.ts             # Vue 应用入口（Electron 版本）
+│       ├── main.web.ts         # Vue 应用入口（Web 版本）
+│       ├── App.vue             # 根组件
+│       ├── webShim.ts          # Web 环境兼容层
+│       ├── env.d.ts            # 环境类型声明
+│       ├── components/         # Vue 组件目录
+│       │   ├── common/         # 通用组件
+│       │   │   ├── AppHeader.vue       # 应用顶部导航栏
+│       │   │   ├── ContextMenu.vue     # 右键上下文菜单
+│       │   │   ├── NodeFloatToolbar.vue # 节点浮动工具栏
+│       │   │   └── SaveDialog.vue      # 保存对话框
+│       │   ├── mindmap/        # 思维导图相关组件
+│       │   │   ├── MindMapContainer.vue # 思维导图容器（核心组件）
+│       │   │   └── NodeEditor.vue      # 节点编辑器
+│       │   └── sidebar/        # 侧边栏组件
+│       │       ├── Sidebar.vue         # 侧边栏容器
+│       │       └── MindMapList.vue     # 文件列表
+│       ├── stores/             # Pinia 状态管理
+│       │   ├── index.ts                # Store 导出入口
+│       │   ├── mindMapStore.ts         # 思维导图状态（数据、历史、布局）
+│       │   └── fileListStore.ts        # 文件列表状态（增删改查）
+│       ├── utils/              # 工具函数
+│       │   ├── index.ts                # 工具函数导出入口
+│       │   ├── historyManager.ts       # 撤销/重做历史管理器
+│       │   ├── mindMapHelper.ts        # 思维导图数据转换工具
+│       │   └── elementIcons.ts         # Element Plus 图标注册工具
+│       ├── types/              # TypeScript 类型定义
+│       │   ├── index.ts                # 类型导出入口
+│       │   ├── mindMap.ts              # 思维导图相关类型
+│       │   ├── file.ts                 # 文件相关类型
+│       │   ├── history.ts              # 历史记录相关类型
+│       │   └── simple-mind-map.d.ts    # simple-mind-map 库类型声明
+│       └── styles/             # 样式文件
+│           └── main.css               # 全局样式
+├── dist-web/                   # Web 版本构建输出目录
+├── out/                        # Electron 构建输出目录
+├── index.html                  # Electron 版本 HTML 入口
+├── index.web.html              # Web 版本 HTML 入口
+├── forge.config.ts             # Electron Forge 配置（打包、发布）
+├── vite.main.config.mts        # Vite 配置 - 主进程
+├── vite.preload.config.mts     # Vite 配置 - 预加载脚本
+├── vite.renderer.config.mts    # Vite 配置 - 渲染进程（Electron）
+├── vite.web.config.mts         # Vite 配置 - Web 版本
+├── tsconfig.json               # TypeScript 配置
+├── package.json                # 项目依赖与脚本配置
+└── CLAUDE.md                   # Claude Code 项目指南
 ```
+
+### 核心模块说明
+
+| 模块 | 文件 | 说明 |
+|------|------|------|
+| **主进程** | `src/main.ts` | Electron 主进程，负责创建窗口、管理应用生命周期 |
+| **预加载脚本** | `src/preload.ts` | 安全桥接主进程与渲染进程的通信 |
+| **思维导图核心** | `components/mindmap/MindMapContainer.vue` | 封装 simple-mind-map，处理节点操作与事件 |
+| **状态管理** | `stores/mindMapStore.ts` | 管理思维导图数据、撤销/重做历史、布局模式 |
+| **文件管理** | `stores/fileListStore.ts` | 管理文件列表的增删改查与本地存储 |
+| **历史管理** | `utils/historyManager.ts` | 实现撤销/重做功能的状态栈管理 |
+| **数据转换** | `utils/mindMapHelper.ts` | 多根节点数据与 simple-mind-map 格式互转 |
+
+### 双版本支持
+
+项目同时支持 **Electron 桌面版** 和 **Web 版本**：
+
+- **Electron 版本**：入口 `src/renderer/main.ts`，HTML `index.html`
+- **Web 版本**：入口 `src/renderer/main.web.ts`，HTML `index.web.html`
+- **兼容层**：`src/renderer/webShim.ts` 提供 Web 环境下缺失的 Electron API 模拟
 
 ## License
 

@@ -30,6 +30,9 @@ export const useMindMapStore = defineStore('mindMap', () => {
   // 布局模式: 'logicalStructure' 从左到右, 'organizationStructure' 从上到下
   const layout = ref<'logicalStructure' | 'organizationStructure'>('logicalStructure');
 
+  // 待记录的历史动作（用于在 data_change 事件中记录历史）
+  let pendingHistoryAction: string | null = null;
+
   // 计算属性
   const canUndo = computed(() => historyManager.value?.canUndo() || false);
   const canRedo = computed(() => historyManager.value?.canRedo() || false);
@@ -63,7 +66,12 @@ export const useMindMapStore = defineStore('mindMap', () => {
       if (currentData.value) {
         const multiRootData = fromSimpleMindMapFormat(data, currentData.value);
         currentData.value = multiRootData;
-        // 不在这里记录历史，由具体操作决定是否记录
+
+        // 如果有待记录的历史动作，在数据更新后记录
+        if (pendingHistoryAction) {
+          historyManager.value?.push(multiRootData, pendingHistoryAction);
+          pendingHistoryAction = null;
+        }
       }
     });
 
@@ -116,12 +124,10 @@ export const useMindMapStore = defineStore('mindMap', () => {
   }
 
   /**
-   * 记录历史
+   * 记录历史（设置待记录动作，在下次 data_change 事件中实际记录）
    */
   function recordHistory(action: string): void {
-    if (currentData.value) {
-      historyManager.value?.push(currentData.value, action);
-    }
+    pendingHistoryAction = action;
   }
 
   /**

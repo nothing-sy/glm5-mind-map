@@ -28,7 +28,14 @@ export class HistoryManager implements IHistoryManager {
    * 记录新状态
    */
   push(data: MultiRootMindMapData, action: string): void {
+    // 防止短时间内重复记录相同数据
     if (this.present) {
+      const currentDataStr = JSON.stringify(this.present.data);
+      const newDataStr = JSON.stringify(data);
+      if (currentDataStr === newDataStr) {
+        // 数据相同，不记录
+        return;
+      }
       this.past.push(this.present);
     }
     this.present = this.createState(data, action);

@@ -174,23 +174,23 @@ function handleContextMenuAction(action: string, nodeData: any) {
 }
 
 function addChildNode(parentNode: any) {
-  mindMapInstance?.execCommand('INSERT_CHILD_NODE', false, [parentNode]);
   mindMapStore.recordHistory('添加子节点');
+  mindMapInstance?.execCommand('INSERT_CHILD_NODE', false, [parentNode]);
 }
 
 function addSiblingNode(node: any) {
-  mindMapInstance?.execCommand('INSERT_NODE', false, [node]);
   mindMapStore.recordHistory('添加同级节点');
+  mindMapInstance?.execCommand('INSERT_NODE', false, [node]);
 }
 
 function deleteNode(node: any) {
-  mindMapInstance?.execCommand('REMOVE_NODE', node);
   mindMapStore.recordHistory('删除节点');
+  mindMapInstance?.execCommand('REMOVE_NODE', node);
 }
 
 function addRootNode() {
-  mindMapInstance?.execCommand('ADD_ROOT_NODE');
   mindMapStore.recordHistory('添加根节点');
+  mindMapInstance?.execCommand('ADD_ROOT_NODE');
 }
 
 let clipboardNode: MindMapNode | null = null;
@@ -207,8 +207,8 @@ function cutNode(node: any) {
 function pasteNode(targetNode: any) {
   if (!clipboardNode) return;
   const newNode = JSON.parse(JSON.stringify(clipboardNode));
-  mindMapInstance?.execCommand('INSERT_CHILD_NODE', false, [targetNode], newNode);
   mindMapStore.recordHistory('粘贴节点');
+  mindMapInstance?.execCommand('INSERT_CHILD_NODE', false, [targetNode], newNode);
 }
 
 // 暴露方法给父组件
