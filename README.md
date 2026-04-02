@@ -4,6 +4,14 @@
 
 本项目是 AI 辅助编程的实践案例，从架构设计到代码实现，全程由 Claude Code + GLM-5.0 协作完成。
 
+## 🌐 在线体验
+
+> **在线演示地址**: [https://nothing-sy.github.io/glm5-mind-map/](https://nothing-sy.github.io/glm5-mind-map/)
+
+无需安装，点击上方链接即可在浏览器中直接体验思维导图功能。
+
+**注意**: 在线版本使用浏览器本地存储（localStorage）保存数据，数据仅保存在当前浏览器中。如需跨设备使用，请下载桌面版应用。
+
 **作者有话说：本项目我只负责了以下几件事**
 - 使用 npx create-electron-app@latest my-new-app --template=vite-typescript 创建项目 （由于electron的坑太多了，AI完全无法自主搭建成功基本框架，总会有各种各样的依赖或者版本或者其他问题，始终无法修复，所以选择electron自带的脚手架搭建）
 - QA方式提需求，反馈问题，我没有任何代码review行为
