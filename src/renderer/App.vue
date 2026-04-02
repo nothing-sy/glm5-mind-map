@@ -142,23 +142,21 @@ async function handleExport(format: string) {
       }
     } else if (format === 'png' || format === 'svg') {
       // 使用 simple-mind-map 的导出功能
-      const blob = await mindMapContainerRef.value?.export(format === 'png' ? 'png' : 'svg');
-      if (blob) {
-        const reader = new FileReader();
-        reader.onload = async () => {
-          const base64 = (reader.result as string).split(',')[1];
-          const result = await window.electronAPI.saveFile({
-            defaultPath: `${activeFile.value!.name}.${format}`,
-            filters: [{ name: format.toUpperCase(), extensions: [format] }],
-            content: base64,
-            isBase64: true,
-          });
+      // export 返回的是 Data URL 字符串 (data:image/png;base64,...)
+      const dataUrl = await mindMapContainerRef.value?.export(format === 'png' ? 'png' : 'svg');
+      if (dataUrl) {
+        // 从 Data URL 中提取 base64 部分
+        const base64 = dataUrl.split(',')[1];
+        const result = await window.electronAPI.saveFile({
+          defaultPath: `${activeFile.value!.name}.${format}`,
+          filters: [{ name: format.toUpperCase(), extensions: [format] }],
+          content: base64,
+          isBase64: true,
+        });
 
-          if (result.success) {
-            ElMessage.success('导出成功');
-          }
-        };
-        reader.readAsDataURL(blob);
+        if (result.success) {
+          ElMessage.success('导出成功');
+        }
       }
     }
   } catch (error) {

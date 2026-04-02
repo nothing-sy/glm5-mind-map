@@ -214,7 +214,9 @@ function pasteNode(targetNode: any) {
 // 暴露方法给父组件
 defineExpose({
   export: async (format: string, options?: any) => {
-    return mindMapInstance?.export(format, options);
+    // simple-mind-map export 签名: export(type, isDownload = true, name = '思维导图')
+    // 传递 isDownload = false 只获取 Data URL，不触发内部下载
+    return mindMapInstance?.export(format, false, options?.name || activeFile.value?.name || '思维导图');
   },
   getData: () => {
     return mindMapInstance?.getData();
