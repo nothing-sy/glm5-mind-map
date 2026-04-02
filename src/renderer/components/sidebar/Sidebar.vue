@@ -187,6 +187,7 @@ async function handleDrop(e: DragEvent) {
   color: #fff;
   font-size: 16px;
   z-index: 10;
+  pointer-events: none;
 }
 
 .drop-icon {

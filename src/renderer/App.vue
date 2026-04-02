@@ -293,7 +293,16 @@ function handleLayoutChange(newLayout: 'logicalStructure' | 'organizationStructu
               <el-icon><Plus /></el-icon>
             </el-button>
           </el-tooltip>
+        </div>
 
+        <div class="toolbar-center">
+          <span class="file-name" v-if="activeFile">
+            {{ activeFile.name }}
+            <span v-if="activeFile.isDirty" class="dirty-mark">*</span>
+          </span>
+        </div>
+
+        <div class="toolbar-right">
           <el-tooltip content="保存 (Ctrl+S)" placement="bottom">
             <el-button type="primary" :disabled="!activeFile" @click="handleSave">
               <el-icon><DocumentChecked /></el-icon>
@@ -307,16 +316,9 @@ function handleLayoutChange(newLayout: 'logicalStructure' | 'organizationStructu
               另存为
             </el-button>
           </el-tooltip>
-        </div>
 
-        <div class="toolbar-center">
-          <span class="file-name" v-if="activeFile">
-            {{ activeFile.name }}
-            <span v-if="activeFile.isDirty" class="dirty-mark">*</span>
-          </span>
-        </div>
+          <el-divider direction="vertical" />
 
-        <div class="toolbar-right">
           <el-dropdown trigger="click" @command="handleImport">
             <el-button>
               <el-icon><Upload /></el-icon>
