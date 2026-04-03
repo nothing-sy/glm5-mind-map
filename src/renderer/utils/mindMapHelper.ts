@@ -39,22 +39,38 @@ export function createEmptyMindMapData(name: string = '未命名思维导图'): 
 /**
  * 将多根节点数据转换为 simple-mind-map 可识别的格式
  * 单根节点直接返回，多根节点创建虚拟根节点包裹
+ * 同时将 id 字段映射到 uid 字段，以支持 simple-mind-map 的节点查找
  */
 export function toSimpleMindMapFormat(data: MultiRootMindMapData): MindMapNode {
   // 单根节点直接返回，避免显示虚拟根节点
   if (data.roots.length === 1) {
-    return data.roots[0];
+    return addUidToNode(data.roots[0]);
   }
   // 多根节点时创建虚拟根节点包裹
   return {
     data: {
       id: VIRTUAL_ROOT_ID,
+      uid: VIRTUAL_ROOT_ID,
       text: '',
       style: {
         fontSize: 0,
       } as any,
     },
-    children: data.roots,
+    children: data.roots.map(addUidToNode),
+  };
+}
+
+/**
+ * 为节点添加 uid 字段（使用 id 作为 uid）
+ */
+function addUidToNode(node: MindMapNode): MindMapNode {
+  return {
+    ...node,
+    data: {
+      ...node.data,
+      uid: node.data.uid || node.data.id, // 如果没有 uid，使用 id 作为 uid
+    },
+    children: node.children.map(addUidToNode),
   };
 }
 
@@ -237,7 +253,7 @@ export function searchInTree(
 
   if (lowerText.includes(lowerKeyword)) {
     results.push({
-      nodeId: node.data.id,
+      nodeId: node.data.uid || node.data.id, // 优先使用 uid，以支持 simple-mind-map 的节点查找
       text: node.data.text,
       path: currentPath,
     });
