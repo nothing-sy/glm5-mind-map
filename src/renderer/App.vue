@@ -18,6 +18,7 @@ import Sidebar from '@/components/sidebar/Sidebar.vue';
 import MindMapContainer from '@/components/mindmap/MindMapContainer.vue';
 import SaveDialog from '@/components/common/SaveDialog.vue';
 import SearchPanel from '@/components/common/SearchPanel.vue';
+import FloatingToolbar from '@/components/common/FloatingToolbar.vue';
 import { useMindMapStore, useFileListStore } from '@/stores';
 import { storeToRefs } from 'pinia';
 import { validateMindMapData, searchNodes } from '@/utils/mindMapHelper';
@@ -427,6 +428,9 @@ function handleSelectSearchResult(result: SearchResult) {
       @search="handleSearch"
       @select="handleSelectSearchResult"
     />
+
+    <!-- 浮动工具栏 -->
+    <FloatingToolbar />
   </div>
 </template>
 
