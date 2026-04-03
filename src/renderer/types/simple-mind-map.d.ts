@@ -58,3 +58,8 @@ declare module 'simple-mind-map/src/plugins/Export' {
   const Export: any;
   export default Export;
 }
+
+declare module 'simple-mind-map/src/plugins/Search' {
+  const Search: any;
+  export default Search;
+}

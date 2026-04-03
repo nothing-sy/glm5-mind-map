@@ -44,6 +44,13 @@ export interface MultiRootMindMapData {
   updated: number;
 }
 
+// 搜索结果项
+export interface SearchResult {
+  nodeId: string;
+  text: string;
+  path: string[]; // 节点路径，从根节点到当前节点
+}
+
 // 思维导图实例类型
 export interface MindMapInstance {
   setData: (data: MindMapNode) => void;

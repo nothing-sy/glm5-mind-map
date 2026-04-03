@@ -62,6 +62,9 @@ export function toSimpleMindMapFormat(data: MultiRootMindMapData): MindMapNode {
  * 从 simple-mind-map 格式提取多根节点数据
  */
 export function fromSimpleMindMapFormat(node: MindMapNode, originalData?: MultiRootMindMapData): MultiRootMindMapData {
+  // 确保所有节点都有 id
+  ensureNodeIds(node);
+
   if (node.data.id === VIRTUAL_ROOT_ID) {
     return {
       id: originalData?.id || generateId(),
@@ -83,6 +86,18 @@ export function fromSimpleMindMapFormat(node: MindMapNode, originalData?: MultiR
     created: originalData?.created || Date.now(),
     updated: Date.now(),
   };
+}
+
+/**
+ * 确保节点及其子节点都有 id
+ */
+function ensureNodeIds(node: MindMapNode): void {
+  if (!node.data.id) {
+    node.data.id = generateId();
+  }
+  for (const child of node.children) {
+    ensureNodeIds(child);
+  }
 }
 
 /**
@@ -196,6 +211,55 @@ export function findParentNode(node: MindMapNode, nodeId: string, parent: MindMa
     if (found !== undefined) return found;
   }
   return null;
+}
+
+/**
+ * 搜索结果项
+ */
+export interface SearchResult {
+  nodeId: string;
+  text: string;
+  path: string[]; // 节点路径，从根节点到当前节点
+}
+
+/**
+ * 在节点树中搜索文本
+ */
+export function searchInTree(
+  node: MindMapNode,
+  keyword: string,
+  path: string[] = []
+): SearchResult[] {
+  const results: SearchResult[] = [];
+  const currentPath = [...path, node.data.text];
+  const lowerKeyword = keyword.toLowerCase();
+  const lowerText = node.data.text.toLowerCase();
+
+  if (lowerText.includes(lowerKeyword)) {
+    results.push({
+      nodeId: node.data.id,
+      text: node.data.text,
+      path: currentPath,
+    });
+  }
+
+  for (const child of node.children) {
+    results.push(...searchInTree(child, keyword, currentPath));
+  }
+
+  return results;
+}
+
+/**
+ * 在多根节点结构中搜索
+ */
+export function searchNodes(data: MultiRootMindMapData, keyword: string): SearchResult[] {
+  if (!keyword.trim()) return [];
+  const results: SearchResult[] = [];
+  for (const root of data.roots) {
+    results.push(...searchInTree(root, keyword));
+  }
+  return results;
 }
 
 /**

@@ -12,14 +12,16 @@ import {
   Plus,
   DArrowRight,
   Bottom,
+  Search,
 } from '@element-plus/icons-vue';
 import Sidebar from '@/components/sidebar/Sidebar.vue';
 import MindMapContainer from '@/components/mindmap/MindMapContainer.vue';
 import SaveDialog from '@/components/common/SaveDialog.vue';
+import SearchPanel from '@/components/common/SearchPanel.vue';
 import { useMindMapStore, useFileListStore } from '@/stores';
 import { storeToRefs } from 'pinia';
-import { validateMindMapData } from '@/utils/mindMapHelper';
-import type { MultiRootMindMapData } from '@/types';
+import { validateMindMapData, searchNodes } from '@/utils/mindMapHelper';
+import type { MultiRootMindMapData, SearchResult } from '@/types';
 
 const mindMapStore = useMindMapStore();
 const fileListStore = useFileListStore();
@@ -32,6 +34,10 @@ const mindMapContainerRef = ref<InstanceType<typeof MindMapContainer> | null>(nu
 const saveDialogVisible = ref(false);
 const defaultSaveName = ref('');
 const isSaveAs = ref(false);
+
+// 搜索面板状态
+const searchPanelVisible = ref(false);
+const searchPanelRef = ref<InstanceType<typeof SearchPanel> | null>(null);
 
 // 初始化：创建第一个文件
 onMounted(() => {
@@ -65,11 +71,23 @@ function setupShortcutListeners() {
     }
   });
 
+  // Ctrl+F 搜索快捷键
+  const handleFindShortcut = (e: KeyboardEvent) => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
+      e.preventDefault();
+      if (activeFile.value) {
+        handleOpenSearch();
+      }
+    }
+  };
+  window.addEventListener('keydown', handleFindShortcut);
+
   // 清理函数
   onUnmounted(() => {
     cleanupSave();
     cleanupUndo();
     cleanupRedo();
+    window.removeEventListener('keydown', handleFindShortcut);
   });
 }
 
@@ -240,6 +258,31 @@ function handleRedo() {
 function handleLayoutChange(newLayout: 'logicalStructure' | 'organizationStructure') {
   mindMapStore.setLayout(newLayout);
 }
+
+// 打开搜索面板
+function handleOpenSearch() {
+  searchPanelVisible.value = true;
+}
+
+// 关闭搜索面板
+function handleCloseSearch() {
+  searchPanelVisible.value = false;
+}
+
+// 执行搜索
+function handleSearch(keyword: string) {
+  if (!activeFile.value || !keyword.trim()) {
+    searchPanelRef.value?.setResults([]);
+    return;
+  }
+  const results = searchNodes(activeFile.value.data, keyword);
+  searchPanelRef.value?.setResults(results);
+}
+
+// 选中搜索结果，定位到节点
+function handleSelectSearchResult(result: SearchResult) {
+  mindMapContainerRef.value?.focusNode(result.nodeId);
+}
 </script>
 
 <template>
@@ -289,6 +332,14 @@ function handleLayoutChange(newLayout: 'logicalStructure' | 'organizationStructu
           <el-tooltip content="新建" placement="bottom">
             <el-button @click="handleCreate">
               <el-icon><Plus /></el-icon>
+            </el-button>
+          </el-tooltip>
+
+          <el-divider direction="vertical" />
+
+          <el-tooltip content="搜索节点 (Ctrl+F)" placement="bottom">
+            <el-button :disabled="!activeFile" @click="handleOpenSearch">
+              <el-icon><Search /></el-icon>
             </el-button>
           </el-tooltip>
         </div>
@@ -366,6 +417,15 @@ function handleLayoutChange(newLayout: 'logicalStructure' | 'organizationStructu
       v-model:visible="saveDialogVisible"
       :default-name="defaultSaveName"
       @confirm="handleSaveConfirm"
+    />
+
+    <!-- 搜索面板 -->
+    <SearchPanel
+      ref="searchPanelRef"
+      :visible="searchPanelVisible"
+      @close="handleCloseSearch"
+      @search="handleSearch"
+      @select="handleSelectSearchResult"
     />
   </div>
 </template>

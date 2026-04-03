@@ -27,6 +27,7 @@ import MindMap from 'simple-mind-map';
 import Drag from 'simple-mind-map/src/plugins/Drag';
 import Select from 'simple-mind-map/src/plugins/Select';
 import Export from 'simple-mind-map/src/plugins/Export';
+import Search from 'simple-mind-map/src/plugins/Search';
 import { useMindMapStore, useFileListStore } from '@/stores';
 import { storeToRefs } from 'pinia';
 import { toSimpleMindMapFormat, fromSimpleMindMapFormat, createEmptyMindMapData } from '@/utils/mindMapHelper';
@@ -38,6 +39,7 @@ import NodeFloatToolbar from '../common/NodeFloatToolbar.vue';
 MindMap.usePlugin(Drag);
 MindMap.usePlugin(Select);
 MindMap.usePlugin(Export);
+MindMap.usePlugin(Search);
 
 const mindMapRef = ref<HTMLElement | null>(null);
 const mindMapStore = useMindMapStore();
@@ -221,7 +223,97 @@ defineExpose({
   getData: () => {
     return mindMapInstance?.getData();
   },
+  // 定位并激活指定节点
+  focusNode: (nodeId: string) => {
+    if (!mindMapInstance) return;
+
+    // 先取消所有节点的激活状态
+    const activeNodes = mindMapInstance.renderer.activeNodeList || [];
+    activeNodes.forEach((node: any) => {
+      mindMapInstance.execCommand('SET_NODE_ACTIVE', node, false);
+    });
+
+    // 使用 renderer 的所有节点列表来查找目标节点
+    const targetNode = findNodeById(nodeId);
+
+    if (targetNode) {
+      // 激活目标节点
+      mindMapInstance.execCommand('SET_NODE_ACTIVE', targetNode, true);
+      // 将视图移动到节点位置
+      mindMapInstance.renderer.moveNodeToCenter(targetNode);
+    }
+  },
 });
+
+// 通过节点 ID 在渲染器中查找节点
+function findNodeById(nodeId: string): any {
+  if (!mindMapInstance?.renderer) return null;
+
+  // 方法1: 尝试使用 renderer 的节点列表（某些版本）
+  const renderer: any = mindMapInstance.renderer;
+
+  // 检查是否有 allNode 或 nodeList 属性
+  if (renderer.allNode && Array.isArray(renderer.allNode)) {
+    for (const node of renderer.allNode) {
+      const nodeData = node.getData ? node.getData() : null;
+      if (nodeData && nodeData.id === nodeId) {
+        return node;
+      }
+    }
+  }
+
+  // 方法2: 递归遍历渲染树
+  const searchInTree = (node: any): any => {
+    if (!node) return null;
+
+    // 检查当前节点 - 尝试多种方式获取数据
+    let nodeData = null;
+    if (node.getData) {
+      nodeData = node.getData();
+    } else if (node.nodeData) {
+      nodeData = node.nodeData;
+    } else if (node.data) {
+      nodeData = node.data;
+    }
+
+    if (nodeData && nodeData.id === nodeId) {
+      return node;
+    }
+
+    // 遍历子节点 - 检查多种可能的属性名
+    const childrenArrays = [
+      node.children,
+      node._children,
+      node.childList,
+      node.nodeChildren
+    ];
+
+    for (const children of childrenArrays) {
+      if (children && Array.isArray(children)) {
+        for (const child of children) {
+          const found = searchInTree(child);
+          if (found) return found;
+        }
+      }
+    }
+
+    return null;
+  };
+
+  // 从渲染树的根节点开始搜索
+  if (renderer.root) {
+    const result = searchInTree(renderer.root);
+    if (result) return result;
+  }
+
+  // 方法3: 如果有 renderTree 属性
+  if (renderer.renderTree) {
+    const result = searchInTree(renderer.renderTree);
+    if (result) return result;
+  }
+
+  return null;
+}
 </script>
 
 <style scoped>
