@@ -16,6 +16,7 @@
     <NodeFloatToolbar
       :visible="floatToolbarVisible"
       :selected-node="selectedNode"
+      :container-ref="mindMapRef"
       @close="hideFloatToolbar"
     />
   </div>

@@ -30,6 +30,7 @@ const { activeFile, files } = storeToRefs(fileListStore);
 const { canUndo, canRedo, layout } = storeToRefs(mindMapStore);
 
 const mindMapContainerRef = ref<InstanceType<typeof MindMapContainer> | null>(null);
+const mindmapAreaRef = ref<HTMLElement | null>(null);
 
 // 保存对话框状态
 const saveDialogVisible = ref(false);
@@ -400,7 +401,7 @@ function handleSelectSearchResult(result: SearchResult) {
       </div>
 
       <!-- 思维导图区域 -->
-      <div class="mindmap-area">
+      <div ref="mindmapAreaRef" class="mindmap-area">
         <MindMapContainer
           v-if="activeFile"
           ref="mindMapContainerRef"
@@ -430,7 +431,7 @@ function handleSelectSearchResult(result: SearchResult) {
     />
 
     <!-- 浮动工具栏 -->
-    <FloatingToolbar />
+    <FloatingToolbar :container-ref="mindmapAreaRef" />
   </div>
 </template>
 

@@ -136,6 +136,7 @@ import { useMindMapStore } from '@/stores';
 interface Props {
   visible: boolean;
   selectedNode: any;
+  containerRef: HTMLElement | null;
 }
 
 const props = defineProps<Props>();
@@ -203,19 +204,30 @@ const toolbarStyle = computed(() => {
     const toolbarWidth = 280;
     const toolbarHeight = 44;
     const gap = 8;
+    const margin = 10;
+
+    // 获取容器边界
+    const containerRect = props.containerRef?.getBoundingClientRect();
+    const minX = containerRect ? containerRect.left + margin : margin;
+    const maxX = containerRect ? containerRect.right - toolbarWidth - margin : window.innerWidth - toolbarWidth - margin;
+    const minY = containerRect ? containerRect.top + margin : margin;
+    const maxY = containerRect ? containerRect.bottom - toolbarHeight - margin : window.innerHeight - toolbarHeight - margin;
 
     // rect 使用 x, y 而不是 left, top
     let left = rect.x + (rect.width - toolbarWidth) / 2;
     let top = rect.y - toolbarHeight - gap;
 
-    // 边界检测
-    if (left < 10) left = 10;
-    if (left + toolbarWidth > window.innerWidth - 10) {
-      left = window.innerWidth - toolbarWidth - 10;
-    }
-    if (top < 10) {
+    // 边界检测 - 限制在画布容器内
+    if (left < minX) left = minX;
+    if (left > maxX) left = maxX;
+    if (top < minY) {
+      // 如果上方放不下，尝试放在节点下方
       top = rect.y + rect.height + gap;
+      if (top > maxY) {
+        top = maxY;
+      }
     }
+    if (top > maxY) top = maxY;
 
     return {
       left: `${left}px`,

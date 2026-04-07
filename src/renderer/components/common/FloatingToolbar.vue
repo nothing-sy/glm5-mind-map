@@ -44,6 +44,12 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { Rank, Search, Setting, FullScreen, Grid } from '@element-plus/icons-vue';
 
+interface Props {
+  containerRef?: HTMLElement | null;
+}
+
+const props = defineProps<Props>();
+
 // 常量
 const STORAGE_KEY = 'floating-toolbar-position';
 const TOOLBAR_WIDTH = 48;
@@ -56,6 +62,25 @@ const position = ref({ left: DEFAULT_LEFT, top: 0 });
 const isDragging = ref(false);
 const dragStart = ref({ x: 0, y: 0, left: 0, top: 0 });
 
+// 获取边界
+function getBounds() {
+  if (props.containerRef) {
+    const rect = props.containerRef.getBoundingClientRect();
+    return {
+      minX: rect.left + GAP,
+      maxX: rect.right - TOOLBAR_WIDTH - GAP,
+      minY: rect.top + GAP,
+      maxY: rect.bottom - TOOLBAR_HEIGHT - GAP,
+    };
+  }
+  return {
+    minX: GAP,
+    maxX: window.innerWidth - TOOLBAR_WIDTH - GAP,
+    minY: GAP,
+    maxY: window.innerHeight - TOOLBAR_HEIGHT - GAP,
+  };
+}
+
 // 计算样式
 const toolbarStyle = computed(() => ({
   left: `${position.value.left}px`,
@@ -64,12 +89,13 @@ const toolbarStyle = computed(() => ({
 
 // 初始化位置
 function initPosition() {
+  const bounds = getBounds();
   // 尝试从 localStorage 恢复位置
   const saved = localStorage.getItem(STORAGE_KEY);
   if (saved) {
     try {
       const parsed = JSON.parse(saved);
-      // 验证位置是否在可视区域内
+      // 验证位置是否在容器区域内
       if (isValidPosition(parsed.left, parsed.top)) {
         position.value = parsed;
         return;
@@ -79,19 +105,21 @@ function initPosition() {
     }
   }
   // 使用默认位置：垂直居中
+  const centerTop = Math.floor((bounds.maxY + bounds.minY) / 2);
   position.value = {
-    left: DEFAULT_LEFT,
-    top: Math.floor((window.innerHeight - TOOLBAR_HEIGHT) / 2),
+    left: bounds.minX,
+    top: Math.max(bounds.minY, Math.min(centerTop, bounds.maxY)),
   };
 }
 
 // 验证位置是否有效
 function isValidPosition(left: number, top: number): boolean {
+  const bounds = getBounds();
   return (
-    left >= 0 &&
-    left <= window.innerWidth - TOOLBAR_WIDTH &&
-    top >= 0 &&
-    top <= window.innerHeight - TOOLBAR_HEIGHT
+    left >= bounds.minX &&
+    left <= bounds.maxX &&
+    top >= bounds.minY &&
+    top <= bounds.maxY
   );
 }
 
@@ -125,15 +153,16 @@ function handleMouseDown(e: MouseEvent) {
 function handleMouseMove(e: MouseEvent) {
   if (!isDragging.value) return;
 
+  const bounds = getBounds();
   const deltaX = e.clientX - dragStart.value.x;
   const deltaY = e.clientY - dragStart.value.y;
 
   let newLeft = dragStart.value.left + deltaX;
   let newTop = dragStart.value.top + deltaY;
 
-  // 边界检测
-  newLeft = Math.max(GAP, Math.min(newLeft, window.innerWidth - TOOLBAR_WIDTH - GAP));
-  newTop = Math.max(GAP, Math.min(newTop, window.innerHeight - TOOLBAR_HEIGHT - GAP));
+  // 边界检测 - 限制在容器范围内
+  newLeft = Math.max(bounds.minX, Math.min(newLeft, bounds.maxX));
+  newTop = Math.max(bounds.minY, Math.min(newTop, bounds.maxY));
 
   position.value = { left: newLeft, top: newTop };
 }
@@ -167,12 +196,13 @@ function handleTool4() {
 
 // 窗口大小变化时调整位置
 function handleResize() {
-  // 确保工具栏在可视区域内
+  // 确保工具栏在容器区域内
+  const bounds = getBounds();
   const { left, top } = position.value;
   if (!isValidPosition(left, top)) {
     position.value = {
-      left: Math.min(left, window.innerWidth - TOOLBAR_WIDTH - GAP),
-      top: Math.min(top, window.innerHeight - TOOLBAR_HEIGHT - GAP),
+      left: Math.max(bounds.minX, Math.min(left, bounds.maxX)),
+      top: Math.max(bounds.minY, Math.min(top, bounds.maxY)),
     };
   }
 }
