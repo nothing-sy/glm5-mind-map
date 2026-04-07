@@ -12,11 +12,57 @@
 
       <!-- 工具按钮组 -->
       <div class="toolbar-buttons">
-        <el-tooltip content="搜索" placement="right">
-          <el-button class="tool-btn" @click.stop="handleTool1">
-            <el-icon><Search /></el-icon>
-          </el-button>
-        </el-tooltip>
+        <!-- 背景切换 -->
+        <el-popover trigger="click" placement="right" :width="280">
+          <template #reference>
+            <el-button class="tool-btn" @click.stop>
+              <el-icon><Grid /></el-icon>
+            </el-button>
+          </template>
+
+          <!-- 背景选择面板 -->
+          <div class="background-picker-panel">
+            <div class="background-options">
+              <div
+                class="bg-option"
+                :class="{ 'is-active': currentBackgroundMode === 'dots' }"
+                @click="handleBackgroundChange('dots')"
+              >
+                <div class="bg-preview dots-bg"></div>
+                <span>点阵</span>
+              </div>
+              <div
+                class="bg-option"
+                :class="{ 'is-active': currentBackgroundMode === 'grid' }"
+                @click="handleBackgroundChange('grid')"
+              >
+                <div class="bg-preview grid-bg"></div>
+                <span>网格</span>
+              </div>
+              <div
+                class="bg-option"
+                :class="{ 'is-active': currentBackgroundMode === 'gradient' }"
+                @click="handleBackgroundChange('gradient')"
+              >
+                <div class="bg-preview gradient-bg" :style="gradientPreviewStyle"></div>
+                <span>渐变</span>
+              </div>
+            </div>
+
+            <!-- 渐变颜色选择 -->
+            <div v-if="currentBackgroundMode === 'gradient'" class="gradient-colors">
+              <el-divider />
+              <div class="color-row">
+                <span>起始色:</span>
+                <el-color-picker v-model="gradientStart" size="small" @change="updateGradient" />
+              </div>
+              <div class="color-row">
+                <span>结束色:</span>
+                <el-color-picker v-model="gradientEnd" size="small" @change="updateGradient" />
+              </div>
+            </div>
+          </div>
+        </el-popover>
 
         <el-tooltip content="设置" placement="right">
           <el-button class="tool-btn" @click.stop="handleTool2">
@@ -30,9 +76,9 @@
           </el-button>
         </el-tooltip>
 
-        <el-tooltip content="网格" placement="right">
+        <el-tooltip content="搜索" placement="right">
           <el-button class="tool-btn" @click.stop="handleTool4">
-            <el-icon><Grid /></el-icon>
+            <el-icon><Search /></el-icon>
           </el-button>
         </el-tooltip>
       </div>
@@ -43,12 +89,41 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { Rank, Search, Setting, FullScreen, Grid } from '@element-plus/icons-vue';
+import { useMindMapStore } from '@/stores';
+import { storeToRefs } from 'pinia';
 
 interface Props {
   containerRef?: HTMLElement | null;
 }
 
 const props = defineProps<Props>();
+
+const mindMapStore = useMindMapStore();
+const { backgroundMode, gradientColors } = storeToRefs(mindMapStore);
+
+// 背景相关状态
+const currentBackgroundMode = ref(backgroundMode.value);
+const gradientStart = ref(gradientColors.value.start);
+const gradientEnd = ref(gradientColors.value.end);
+
+// 渐变预览样式
+const gradientPreviewStyle = computed(() => ({
+  background: `linear-gradient(135deg, ${gradientStart.value} 0%, ${gradientEnd.value} 100%)`,
+}));
+
+// 处理背景模式切换
+function handleBackgroundChange(mode: 'dots' | 'grid' | 'gradient') {
+  currentBackgroundMode.value = mode;
+  mindMapStore.setBackgroundMode(mode);
+  if (mode === 'gradient') {
+    mindMapStore.setGradientColors(gradientStart.value, gradientEnd.value);
+  }
+}
+
+// 更新渐变颜色
+function updateGradient() {
+  mindMapStore.setGradientColors(gradientStart.value, gradientEnd.value);
+}
 
 // 常量
 const STORAGE_KEY = 'floating-toolbar-position';
@@ -177,11 +252,7 @@ function handleMouseUp() {
   document.removeEventListener('mouseup', handleMouseUp);
 }
 
-// 工具按钮点击处理（占位符）
-function handleTool1() {
-  console.log('Tool 1 clicked: 搜索');
-}
-
+// 工具按钮点击处理
 function handleTool2() {
   console.log('Tool 2 clicked: 设置');
 }
@@ -191,7 +262,7 @@ function handleTool3() {
 }
 
 function handleTool4() {
-  console.log('Tool 4 clicked: 网格');
+  console.log('Tool 4 clicked: 搜索');
 }
 
 // 窗口大小变化时调整位置
@@ -263,17 +334,106 @@ onUnmounted(() => {
 .tool-btn {
   width: 36px;
   height: 36px;
-  padding: 0;
+  padding: 0 !important;
   border: none;
   background: transparent;
   border-radius: 6px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.tool-btn :deep(.el-icon) {
+  margin: 0 !important;
+}
+
+.floating-toolbar :deep(.el-button + .el-button) {
+  margin-left: 0 !important;
 }
 
 .tool-btn:hover {
   background: #f0f2f5;
   color: #409eff;
+}
+
+/* 背景选择面板 */
+.background-picker-panel {
+  padding: 8px;
+}
+
+.background-options {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.bg-option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  transition: all 0.2s;
+}
+
+.bg-option:hover {
+  background: #f0f2f5;
+}
+
+.bg-option.is-active {
+  background: #ecf5ff;
+}
+
+.bg-option.is-active .bg-preview {
+  border-color: #409eff;
+}
+
+.bg-option span {
+  font-size: 12px;
+  color: #606266;
+}
+
+.bg-preview {
+  width: 48px;
+  height: 48px;
+  border-radius: 6px;
+  border: 2px solid #dcdfe6;
+  transition: border-color 0.2s;
+}
+
+.dots-bg {
+  background: radial-gradient(circle, #d0d0d0 1px, transparent 1px);
+  background-size: 8px 8px;
+  background-color: #fff;
+}
+
+.grid-bg {
+  background-image:
+    linear-gradient(to right, #e0e0e0 1px, transparent 1px),
+    linear-gradient(to bottom, #e0e0e0 1px, transparent 1px);
+  background-size: 8px 8px;
+  background-color: #fff;
+}
+
+.gradient-bg {
+  background: linear-gradient(135deg, #e8f4f8 0%, #f0e6f6 100%);
+}
+
+.gradient-colors {
+  margin-top: 8px;
+}
+
+.color-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 8px;
+}
+
+.color-row span {
+  font-size: 13px;
+  color: #606266;
 }
 </style>

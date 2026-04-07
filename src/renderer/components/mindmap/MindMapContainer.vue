@@ -46,7 +46,7 @@ const mindMapRef = ref<HTMLElement | null>(null);
 const mindMapStore = useMindMapStore();
 const fileListStore = useFileListStore();
 const { activeFile } = storeToRefs(fileListStore);
-const { layout, floatToolbarVisible, selectedNode } = storeToRefs(mindMapStore);
+const { layout, floatToolbarVisible, selectedNode, backgroundMode, gradientColors } = storeToRefs(mindMapStore);
 const { hideFloatToolbar } = mindMapStore;
 
 // 右键菜单状态
@@ -57,6 +57,49 @@ const selectedNodeData = ref<any>(null);
 
 // 思维导图实例
 let mindMapInstance: any = null;
+
+// 应用背景样式到画布元素
+function applyBackgroundStyle() {
+  if (!mindMapRef.value) return;
+
+  const el = mindMapRef.value;
+  let background = '';
+  let backgroundSize = '';
+  let backgroundColor = '';
+
+  switch (backgroundMode.value) {
+    case 'dots':
+      background = 'radial-gradient(circle, #d0d0d0 1px, transparent 1px)';
+      backgroundSize = '20px 20px';
+      backgroundColor = '#fff';
+      break;
+    case 'grid':
+      background = `
+        linear-gradient(to right, #e0e0e0 1px, transparent 1px),
+        linear-gradient(to bottom, #e0e0e0 1px, transparent 1px)
+      `;
+      backgroundSize = '20px 20px';
+      backgroundColor = '#fff';
+      break;
+    case 'gradient':
+      background = `linear-gradient(135deg, ${gradientColors.value.start} 0%, ${gradientColors.value.end} 100%)`;
+      break;
+  }
+
+  // 使用 setProperty 设置 !important 优先级
+  el.style.setProperty('background', background, 'important');
+  if (backgroundSize) {
+    el.style.setProperty('background-size', backgroundSize, 'important');
+  }
+  if (backgroundColor) {
+    el.style.setProperty('background-color', backgroundColor, 'important');
+  }
+}
+
+// 监听背景配置变化
+watch([backgroundMode, gradientColors], () => {
+  applyBackgroundStyle();
+}, { deep: true });
 
 // 监听当前文件变化
 watch(activeFile, (newFile) => {
@@ -129,6 +172,11 @@ function bindEvents() {
       const multiRootData = fromSimpleMindMapFormat(data, activeFile.value.data);
       fileListStore.updateFileData(activeFile.value.id, multiRootData);
     }
+  });
+
+  // 渲染完成后重新应用背景样式（simple-mind-map 会在渲染时覆盖背景）
+  mindMapInstance.on('node_tree_render_end', () => {
+    applyBackgroundStyle();
   });
 }
 

@@ -27,6 +27,11 @@ export const useMindMapStore = defineStore('mindMap', () => {
   // 是否正在编辑
   const isEditing = ref(false);
 
+  // 画布背景配置
+  type BackgroundMode = 'dots' | 'grid' | 'gradient';
+  const backgroundMode = ref<BackgroundMode>('dots');
+  const gradientColors = ref<{ start: string; end: string }>({ start: '#e8f4f8', end: '#f0e6f6' });
+
   // 布局模式: 'logicalStructure' 从左到右, 'organizationStructure' 从上到下
   const layout = ref<'logicalStructure' | 'organizationStructure'>('logicalStructure');
 
@@ -167,6 +172,20 @@ export const useMindMapStore = defineStore('mindMap', () => {
     floatToolbarVisible.value = false;
   }
 
+  /**
+   * 设置画布背景模式
+   */
+  function setBackgroundMode(mode: BackgroundMode): void {
+    backgroundMode.value = mode;
+  }
+
+  /**
+   * 设置渐变颜色
+   */
+  function setGradientColors(start: string, end: string): void {
+    gradientColors.value = { start, end };
+  }
+
   return {
     mindMapInstance,
     currentData,
@@ -176,6 +195,8 @@ export const useMindMapStore = defineStore('mindMap', () => {
     canUndo,
     canRedo,
     floatToolbarVisible,
+    backgroundMode,
+    gradientColors,
     initMindMap,
     setData,
     undo,
@@ -185,5 +206,7 @@ export const useMindMapStore = defineStore('mindMap', () => {
     destroy,
     setLayout,
     hideFloatToolbar,
+    setBackgroundMode,
+    setGradientColors,
   };
 });
