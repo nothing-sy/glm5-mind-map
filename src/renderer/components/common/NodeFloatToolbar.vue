@@ -11,7 +11,7 @@
         <div class="toolbar-section">
           <el-dropdown trigger="click" @command="handleFontSizeChange">
             <el-button size="small" class="toolbar-btn" title="字体大小">
-              <el-icon><EditPen /></el-icon>
+              <span class="icon-svg" v-html="pencilIcon"></span>
               <span class="current-size">{{ currentFontSize }}</span>
             </el-button>
             <template #dropdown>
@@ -71,7 +71,7 @@
           <el-popover trigger="click" placement="bottom" :width="340" role="tooltip">
             <template #reference>
               <el-button size="small" class="toolbar-btn" title="插入图标">
-                <el-icon><Star /></el-icon>
+                <span class="icon-svg" v-html="starIcon"></span>
               </el-button>
             </template>
 
@@ -85,7 +85,7 @@
                 class="icon-search"
               >
                 <template #prefix>
-                  <el-icon><Search /></el-icon>
+                  <span class="icon-svg small" v-html="magnifyingGlassIcon"></span>
                 </template>
               </el-input>
 
@@ -97,9 +97,7 @@
                   :title="icon.name"
                   @click="handleIconSelect(icon.name)"
                 >
-                  <el-icon :size="18">
-                    <component :is="icon.component" />
-                  </el-icon>
+                  <span class="icon-svg" v-html="getLocalIconSvg(icon.icon)"></span>
                 </div>
               </div>
 
@@ -129,9 +127,41 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
-import { EditPen, Star, Search } from '@element-plus/icons-vue';
 import { searchIcons, registerIconToMindMap, type IconInfo } from '@/utils/elementIcons';
 import { useMindMapStore } from '@/stores';
+
+// 使用相对路径的 import.meta.glob 预加载所有图标（相对于当前文件）
+const iconModules = import.meta.glob('../../assets/icons/*.svg', { query: '?raw', eager: true, import: 'default' }) as Record<string, string>;
+
+// 导入本地图标 (使用 ?raw 获取 SVG 内容)
+import pencilIcon from '@/assets/icons/pencil.svg?raw';
+import starIcon from '@/assets/icons/star.svg?raw';
+import magnifyingGlassIcon from '@/assets/icons/magnifying-glass-tilted-left.svg?raw';
+
+// 图标缓存
+const iconCache = new Map<string, string>();
+
+// 获取本地图标 SVG 内容
+function getLocalIconSvg(iconName: string): string {
+  if (!iconName.startsWith('noto:')) return '';
+
+  const iconFileName = iconName.replace('noto:', '');
+
+  // 检查缓存
+  if (iconCache.has(iconFileName)) {
+    return iconCache.get(iconFileName) || '';
+  }
+
+  // 遍历查找匹配的图标
+  for (const [key, value] of Object.entries(iconModules)) {
+    if (key.endsWith(`/${iconFileName}.svg`)) {
+      iconCache.set(iconFileName, value);
+      return value;
+    }
+  }
+
+  return '';
+}
 
 interface Props {
   visible: boolean;
@@ -344,6 +374,23 @@ function handleClickOutside(e: MouseEvent) {
 
 .toolbar-btn:hover {
   background: #f0f2f5;
+}
+
+/* SVG 图标样式 */
+.icon-svg {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon-svg :deep(svg) {
+  width: 18px;
+  height: 18px;
+}
+
+.icon-svg.small :deep(svg) {
+  width: 16px;
+  height: 16px;
 }
 
 .current-size {

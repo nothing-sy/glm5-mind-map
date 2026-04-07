@@ -16,7 +16,7 @@
         <el-popover trigger="click" placement="right" :width="280">
           <template #reference>
             <el-button class="tool-btn" @click.stop>
-              <el-icon><Grid /></el-icon>
+              <span class="icon-svg" v-html="layoutGridIcon"></span>
             </el-button>
           </template>
 
@@ -66,19 +66,19 @@
 
         <el-tooltip content="设置" placement="right">
           <el-button class="tool-btn" @click.stop="handleTool2">
-            <el-icon><Setting /></el-icon>
+            <span class="icon-svg" v-html="gearIcon"></span>
           </el-button>
         </el-tooltip>
 
         <el-tooltip content="全屏" placement="right">
           <el-button class="tool-btn" @click.stop="handleTool3">
-            <el-icon><FullScreen /></el-icon>
+            <span class="icon-svg" v-html="desktopComputerIcon"></span>
           </el-button>
         </el-tooltip>
 
         <el-tooltip content="搜索" placement="right">
           <el-button class="tool-btn" @click.stop="handleTool4">
-            <el-icon><Search /></el-icon>
+            <span class="icon-svg" v-html="magnifyingGlassIcon"></span>
           </el-button>
         </el-tooltip>
       </div>
@@ -88,9 +88,15 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue';
-import { Rank, Search, Setting, FullScreen, Grid } from '@element-plus/icons-vue';
+import { Rank } from '@element-plus/icons-vue';
 import { useMindMapStore } from '@/stores';
 import { storeToRefs } from 'pinia';
+
+// 导入本地图标 (使用 ?raw 获取 SVG 内容)
+import layoutGridIcon from '@/assets/icons/layout-grid.svg?raw';
+import gearIcon from '@/assets/icons/gear.svg?raw';
+import desktopComputerIcon from '@/assets/icons/desktop-computer.svg?raw';
+import magnifyingGlassIcon from '@/assets/icons/magnifying-glass-tilted-left.svg?raw';
 
 interface Props {
   containerRef?: HTMLElement | null;
@@ -353,6 +359,23 @@ onUnmounted(() => {
 
 .tool-btn:hover {
   background: #f0f2f5;
+  color: #409eff;
+}
+
+/* SVG 图标样式 */
+.icon-svg {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #606266;
+}
+
+.icon-svg :deep(svg) {
+  width: 18px;
+  height: 18px;
+}
+
+.tool-btn:hover .icon-svg {
   color: #409eff;
 }
 
