@@ -391,7 +391,7 @@ export function getLocalIconUrl(iconName: string): string {
  * @param iconName 图标名称
  * @returns 注册后的图标 key（用于 setIcon）
  */
-export async function registerIconToMindMap(mindMapInstance: any, iconName: string): Promise<string> {
+export function registerIconToMindMap(mindMapInstance: any, iconName: string): string {
   const iconKey = `noto_${iconName}`;
 
   if (!mindMapInstance.opt.iconList) {

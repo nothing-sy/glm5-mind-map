@@ -15,9 +15,12 @@
         <!-- 背景切换 -->
         <el-popover trigger="click" placement="right" :width="280">
           <template #reference>
-            <el-button class="tool-btn" @click.stop>
-              <span class="icon-svg" v-html="layoutGridIcon"></span>
-            </el-button>
+            <div class="tool-btn-wrapper">
+              <el-button class="tool-btn">
+                <span class="icon-svg" v-html="layoutGridIcon"></span>
+              </el-button>
+              <span class="tool-btn-tooltip">背景</span>
+            </div>
           </template>
 
           <!-- 背景选择面板 -->
@@ -377,6 +380,45 @@ onUnmounted(() => {
 
 .tool-btn:hover .icon-svg {
   color: #409eff;
+}
+
+/* 自定义 tooltip */
+.tool-btn-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.tool-btn-tooltip {
+  position: absolute;
+  left: calc(100% + 8px);
+  top: 50%;
+  transform: translateY(-50%);
+  background: #303133;
+  color: #fff;
+  padding: 6px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s, visibility 0.2s;
+  z-index: 9999;
+  pointer-events: none;
+}
+
+.tool-btn-tooltip::before {
+  content: '';
+  position: absolute;
+  right: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  border: 5px solid transparent;
+  border-right-color: #303133;
+}
+
+.tool-btn-wrapper:hover .tool-btn-tooltip {
+  opacity: 1;
+  visibility: visible;
 }
 
 /* 背景选择面板 */
