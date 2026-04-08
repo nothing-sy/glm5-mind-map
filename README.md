@@ -15,7 +15,6 @@
 **作者有话说：本项目我只负责了以下几件事**
 - 使用 npx create-electron-app@latest my-new-app --template=vite-typescript 创建项目 （由于electron的坑太多了，AI完全无法自主搭建成功基本框架，总会有各种各样的依赖或者版本或者其他问题，始终无法修复，所以选择electron自带的脚手架搭建）
 - QA方式提需求，反馈问题，我没有任何代码review行为
-- 写下这段话，其余内容均由AI生成，本人并不清楚任何代码内容，有兴趣的可以fork下来，根据个人需求优化。
 
 ## 功能特性
 
@@ -25,6 +24,11 @@
 - 文件管理（新建、重命名、删除）
 - 支持导出为图片
 - 本地数据持久化存储
+- **浮动工具栏**：可拖动的工具栏，支持背景切换、全屏模式、搜索等功能
+- **画布背景切换**：支持点阵、网格、渐变三种背景模式，渐变支持自定义颜色
+- **全屏模式**：一键进入全屏，专注编辑思维导图
+- **节点搜索**：快速搜索并定位节点
+- **本地图标**：使用 Noto 彩色图标，美观且无需网络加载
 
 ## 技术栈
 
@@ -33,9 +37,10 @@
 | 框架 | [Electron](https://www.electronjs.org/) 41 - 跨平台桌面应用 |
 | 前端 | [Vue 3](https://vuejs.org/) + [TypeScript](https://www.typescriptlang.org/) |
 | 构建 | [Vite](https://vitejs.dev/) + [Electron Forge](https://www.electronforge.io/) |
-| UI | [Element Plus](https://element-plus.org/) + [@element-plus/icons-vue](https://element-plus.org/zh-CN/component/icon.html) |
+| UI | [Element Plus](https://element-plus.org/) |
 | 状态管理 | [Pinia](https://pinia.vuejs.org/) |
 | 思维导图核心 | [simple-mind-map](https://github.com/wanglin2/mind-map) |
+| 图标 | [Noto Color Emoji](https://fonts.google.com/noto/specimen/Noto+Color+Emoji) (本地 SVG) |
 
 ## 环境要求
 
@@ -105,7 +110,9 @@ glm5-mind-map/
 │       │   ├── common/         # 通用组件
 │       │   │   ├── AppHeader.vue       # 应用顶部导航栏
 │       │   │   ├── ContextMenu.vue     # 右键上下文菜单
+│       │   │   ├── FloatingToolbar.vue # 浮动工具栏（背景切换、全屏、搜索）
 │       │   │   ├── NodeFloatToolbar.vue # 节点浮动工具栏
+│       │   │   ├── SearchPanel.vue     # 节点搜索面板
 │       │   │   └── SaveDialog.vue      # 保存对话框
 │       │   ├── mindmap/        # 思维导图相关组件
 │       │   │   ├── MindMapContainer.vue # 思维导图容器（核心组件）
@@ -113,6 +120,8 @@ glm5-mind-map/
 │       │   └── sidebar/        # 侧边栏组件
 │       │       ├── Sidebar.vue         # 侧边栏容器
 │       │       └── MindMapList.vue     # 文件列表
+│       ├── assets/             # 静态资源
+│       │   └── icons/          # Noto 彩色图标（SVG）
 │       ├── stores/             # Pinia 状态管理
 │       │   ├── index.ts                # Store 导出入口
 │       │   ├── mindMapStore.ts         # 思维导图状态（数据、历史、布局）
@@ -151,7 +160,9 @@ glm5-mind-map/
 | **主进程** | `src/main.ts` | Electron 主进程，负责创建窗口、管理应用生命周期 |
 | **预加载脚本** | `src/preload.ts` | 安全桥接主进程与渲染进程的通信 |
 | **思维导图核心** | `components/mindmap/MindMapContainer.vue` | 封装 simple-mind-map，处理节点操作与事件 |
-| **状态管理** | `stores/mindMapStore.ts` | 管理思维导图数据、撤销/重做历史、布局模式 |
+| **浮动工具栏** | `components/common/FloatingToolbar.vue` | 可拖动工具栏，支持背景切换、全屏模式、搜索 |
+| **搜索面板** | `components/common/SearchPanel.vue` | 节点搜索功能，支持键盘导航 |
+| **状态管理** | `stores/mindMapStore.ts` | 管理思维导图数据、撤销/重做历史、布局模式、背景设置 |
 | **文件管理** | `stores/fileListStore.ts` | 管理文件列表的增删改查与本地存储 |
 | **历史管理** | `utils/historyManager.ts` | 实现撤销/重做功能的状态栈管理 |
 | **数据转换** | `utils/mindMapHelper.ts` | 多根节点数据与 simple-mind-map 格式互转 |
