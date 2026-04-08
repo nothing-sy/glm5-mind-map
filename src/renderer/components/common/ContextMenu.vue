@@ -10,13 +10,21 @@
         <span>添加子节点</span>
         <span class="shortcut">Tab</span>
       </div>
-      <div class="menu-item" @click="handleAction('addSibling')">
+      <div
+        class="menu-item"
+        :class="{ disabled: isRootNode }"
+        @click="!isRootNode && handleAction('addSibling')"
+      >
         <el-icon><DocumentCopy /></el-icon>
         <span>添加同级节点</span>
         <span class="shortcut">Enter</span>
       </div>
       <div class="menu-divider"></div>
-      <div class="menu-item" @click="handleAction('delete')">
+      <div
+        class="menu-item"
+        :class="{ disabled: isRootNode }"
+        @click="!isRootNode && handleAction('delete')"
+      >
         <el-icon><Delete /></el-icon>
         <span>删除节点</span>
         <span class="shortcut">Delete</span>
@@ -26,7 +34,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, onUnmounted } from 'vue';
+import { computed, onMounted, onUnmounted } from 'vue';
 import { Plus, DocumentCopy, Delete } from '@element-plus/icons-vue';
 
 interface Props {
@@ -42,6 +50,11 @@ const emit = defineEmits<{
   (e: 'action', action: string, nodeData: any): void;
   (e: 'close'): void;
 }>();
+
+// 判断是否为根节点
+const isRootNode = computed(() => {
+  return props.nodeData?.isRoot === true;
+});
 
 function handleAction(action: string) {
   emit('action', action, props.nodeData);
@@ -87,6 +100,23 @@ onUnmounted(() => {
 
 .menu-item:hover {
   background-color: #f0f2f5;
+}
+
+.menu-item.disabled {
+  color: #c0c4cc;
+  cursor: not-allowed;
+}
+
+.menu-item.disabled:hover {
+  background-color: transparent;
+}
+
+.menu-item.disabled .el-icon {
+  color: #c0c4cc;
+}
+
+.menu-item.disabled .shortcut {
+  color: #c0c4cc;
 }
 
 .menu-item .el-icon {
