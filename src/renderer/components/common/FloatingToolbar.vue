@@ -73,8 +73,8 @@
           </el-button>
         </el-tooltip>
 
-        <el-tooltip content="全屏" placement="right">
-          <el-button class="tool-btn" @click.stop="handleTool3">
+        <el-tooltip :content="isFullscreen ? '退出全屏' : '全屏'" placement="right">
+          <el-button class="tool-btn" :class="{ 'is-active': isFullscreen }" @click.stop="handleTool3">
             <span class="icon-svg" v-html="desktopComputerIcon"></span>
           </el-button>
         </el-tooltip>
@@ -106,6 +106,14 @@ interface Props {
 }
 
 const props = defineProps<Props>();
+
+// 全屏状态
+const isFullscreen = ref(false);
+
+// 定义事件
+const emit = defineEmits<{
+  (e: 'fullscreen-change', isFullscreen: boolean): void;
+}>();
 
 const mindMapStore = useMindMapStore();
 const { backgroundMode, gradientColors } = storeToRefs(mindMapStore);
@@ -267,7 +275,38 @@ function handleTool2() {
 }
 
 function handleTool3() {
-  console.log('Tool 3 clicked: 全屏');
+  if (!props.containerRef) return;
+
+  isFullscreen.value = !isFullscreen.value;
+
+  if (isFullscreen.value) {
+    props.containerRef.classList.add('is-fullscreen');
+  } else {
+    props.containerRef.classList.remove('is-fullscreen');
+  }
+
+  emit('fullscreen-change', isFullscreen.value);
+
+  // 全屏切换后重新计算位置
+  requestAnimationFrame(() => {
+    initPosition();
+  });
+}
+
+// 退出全屏
+function exitFullscreen() {
+  if (!isFullscreen.value) return;
+
+  isFullscreen.value = false;
+  props.containerRef?.classList.remove('is-fullscreen');
+  emit('fullscreen-change', false);
+}
+
+// 监听 ESC 键退出全屏
+function handleKeydown(e: KeyboardEvent) {
+  if (e.key === 'Escape' && isFullscreen.value) {
+    exitFullscreen();
+  }
 }
 
 function handleTool4() {
@@ -290,12 +329,14 @@ function handleResize() {
 onMounted(() => {
   initPosition();
   window.addEventListener('resize', handleResize);
+  document.addEventListener('keydown', handleKeydown);
 });
 
 onUnmounted(() => {
   window.removeEventListener('resize', handleResize);
   document.removeEventListener('mousemove', handleMouseMove);
   document.removeEventListener('mouseup', handleMouseUp);
+  document.removeEventListener('keydown', handleKeydown);
 });
 </script>
 
@@ -362,6 +403,11 @@ onUnmounted(() => {
 
 .tool-btn:hover {
   background: #f0f2f5;
+  color: #409eff;
+}
+
+.tool-btn.is-active {
+  background: #ecf5ff;
   color: #409eff;
 }
 

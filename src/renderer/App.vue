@@ -500,4 +500,15 @@ function handleSelectSearchResult(result: SearchResult) {
   color: #909399;
   font-size: 16px;
 }
+
+/* 全屏模式 */
+.mindmap-area.is-fullscreen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 100;
+  background: #fff;
+}
 </style>

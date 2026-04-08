@@ -1,5 +1,6 @@
 <template>
-  <div class="search-panel" v-if="visible">
+  <Teleport to="body">
+    <div class="search-panel" v-if="visible">
     <div class="search-header">
       <el-input
         ref="searchInputRef"
@@ -40,7 +41,8 @@
         按 <kbd>↑</kbd> <kbd>↓</kbd> 选择，<kbd>Enter</kbd> 跳转
       </span>
     </div>
-  </div>
+    </div>
+  </Teleport>
 </template>
 
 <script setup lang="ts">
@@ -164,7 +166,7 @@ defineExpose({
   background-color: #fff;
   border-radius: 8px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
-  z-index: 1000;
+  z-index: 10001;
   display: flex;
   flex-direction: column;
   overflow: hidden;
