@@ -144,6 +144,18 @@ export const useMindMapStore = defineStore('mindMap', () => {
   }
 
   /**
+   * 立即记录历史（直接从 mindmap 实例获取数据，不依赖 data_change 事件）
+   * 用于拖拽等 data_change 可能延迟触发的场景
+   */
+  function recordHistoryImmediate(action: string): void {
+    if (!mindMapInstance.value || !currentData.value) return;
+    const treeData = mindMapInstance.value.getData();
+    const multiRootData = fromSimpleMindMapFormat(treeData, currentData.value);
+    currentData.value = multiRootData;
+    historyManager.value?.push(multiRootData, action);
+  }
+
+  /**
    * 获取导出数据
    */
   function getExportData(): MultiRootMindMapData | null {
@@ -211,6 +223,7 @@ export const useMindMapStore = defineStore('mindMap', () => {
     redo,
     recordHistory,
     clearPendingHistory,
+    recordHistoryImmediate,
     getExportData,
     destroy,
     setLayout,

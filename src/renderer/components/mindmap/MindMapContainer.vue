@@ -58,9 +58,6 @@ const selectedNodeData = ref<any>(null);
 // 思维导图实例
 let mindMapInstance: any = null;
 
-// 拖拽历史记录标志
-let hasRecordedDragHistory = false;
-
 // 应用背景样式到画布元素
 function applyBackgroundStyle() {
   if (!mindMapRef.value) return;
@@ -182,18 +179,14 @@ function bindEvents() {
     applyBackgroundStyle();
   });
 
-  // 拖拽开始时记录历史（仅一次）
-  mindMapInstance.on('node_dragging', () => {
-    if (!hasRecordedDragHistory) {
-      mindMapStore.recordHistory('拖拽排序节点');
-      hasRecordedDragHistory = true;
-    }
+  // 拖拽结束后直接记录历史（此时 execCommand 已同步执行完毕）
+  mindMapInstance.on('node_dragend', () => {
+    mindMapStore.recordHistoryImmediate('拖拽节点');
   });
 
-  // 拖拽结束时清除未消费的待记录动作（无实际变化的拖拽）
-  mindMapInstance.on('node_dragend', () => {
-    mindMapStore.clearPendingHistory();
-    hasRecordedDragHistory = false;
+  // 节点编辑前记录历史（覆盖双击、右键编辑等所有编辑入口）
+  mindMapInstance.on('before_show_text_edit', () => {
+    mindMapStore.recordHistory('编辑节点');
   });
 }
 
