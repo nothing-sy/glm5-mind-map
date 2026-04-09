@@ -136,6 +136,14 @@ export const useMindMapStore = defineStore('mindMap', () => {
   }
 
   /**
+   * 清除未消费的待记录历史动作
+   * 当拖拽操作未导致实际数据变化时调用
+   */
+  function clearPendingHistory(): void {
+    pendingHistoryAction = null;
+  }
+
+  /**
    * 获取导出数据
    */
   function getExportData(): MultiRootMindMapData | null {
@@ -202,6 +210,7 @@ export const useMindMapStore = defineStore('mindMap', () => {
     undo,
     redo,
     recordHistory,
+    clearPendingHistory,
     getExportData,
     destroy,
     setLayout,
