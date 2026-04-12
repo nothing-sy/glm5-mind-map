@@ -32,6 +32,9 @@ export const useMindMapStore = defineStore('mindMap', () => {
   const backgroundMode = ref<BackgroundMode>('dots');
   const gradientColors = ref<{ start: string; end: string }>({ start: '#e8f4f8', end: '#f0e6f6' });
 
+  // 节点边框样式
+  const nodeBorderStyle = ref<string>('none');
+
   // 布局模式: 'logicalStructure' 从左到右, 'organizationStructure' 从上到下
   const layout = ref<'logicalStructure' | 'organizationStructure'>('logicalStructure');
 
@@ -206,6 +209,23 @@ export const useMindMapStore = defineStore('mindMap', () => {
     gradientColors.value = { start, end };
   }
 
+  /**
+   * 设置节点边框样式（全局主题级别）
+   */
+  function setNodeBorderStyle(style: string): void {
+    nodeBorderStyle.value = style;
+    if (!mindMapInstance.value) return;
+
+    const currentConfig = (mindMapInstance.value as any).getThemeConfig();
+    const newConfig = {
+      ...currentConfig,
+      root: { ...currentConfig.root, borderDasharray: style },
+      second: { ...currentConfig.second, borderDasharray: style },
+      node: { ...currentConfig.node, borderDasharray: style },
+    };
+    (mindMapInstance.value as any).setThemeConfig(newConfig);
+  }
+
   return {
     mindMapInstance,
     currentData,
@@ -217,6 +237,7 @@ export const useMindMapStore = defineStore('mindMap', () => {
     floatToolbarVisible,
     backgroundMode,
     gradientColors,
+    nodeBorderStyle,
     initMindMap,
     setData,
     undo,
@@ -230,5 +251,6 @@ export const useMindMapStore = defineStore('mindMap', () => {
     hideFloatToolbar,
     setBackgroundMode,
     setGradientColors,
+    setNodeBorderStyle,
   };
 });

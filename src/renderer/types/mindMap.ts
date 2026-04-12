@@ -24,6 +24,7 @@ export interface NodeStyle {
   backgroundColor?: string;
   borderColor?: string;
   borderWidth?: number;
+  borderDasharray?: string;
   borderRadius?: number;
 }
 

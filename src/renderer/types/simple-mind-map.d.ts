@@ -16,6 +16,8 @@ declare module 'simple-mind-map' {
     on(event: string, callback: (...args: any[]) => void): void;
     off(event: string, callback: (...args: any[]) => void): void;
     setTheme(theme: string): void;
+    setThemeConfig(config: Record<string, any>): void;
+    getThemeConfig(prop?: string): any;
     setLayout(layout: string): void;
     export(type: string, options?: any): Promise<any>;
     execCommand(command: string, ...args: any[]): void;
@@ -33,6 +35,8 @@ declare module 'simple-mind-map' {
     on(event: string, callback: (...args: any[]) => void): void;
     off(event: string, callback: (...args: any[]) => void): void;
     setTheme(theme: string): void;
+    setThemeConfig(config: Record<string, any>): void;
+    getThemeConfig(prop?: string): any;
     setLayout(layout: string): void;
     export(type: string, options?: any): Promise<any>;
     execCommand(command: string, ...args: any[]): void;

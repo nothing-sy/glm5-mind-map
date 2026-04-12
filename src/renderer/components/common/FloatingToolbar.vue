@@ -79,6 +79,34 @@
           </el-button>
         </el-tooltip>
 
+        <!-- 边框样式 -->
+        <el-popover trigger="click" placement="right" :width="360">
+          <template #reference>
+            <div class="tool-btn-wrapper">
+              <el-button class="tool-btn">
+                <span class="icon-svg" v-html="borderStyleIconSvg"></span>
+              </el-button>
+              <span class="tool-btn-tooltip">边框样式</span>
+            </div>
+          </template>
+
+          <!-- 边框样式选择面板 -->
+          <div class="border-style-panel">
+            <div class="border-style-options">
+              <div
+                v-for="style in borderStyles"
+                :key="style.value"
+                class="border-option"
+                :class="{ 'is-active': currentNodeBorderStyle === style.value }"
+                @click="handleBorderStyleChange(style.value)"
+              >
+                <div class="border-preview" :class="style.cssClass"></div>
+                <span>{{ style.label }}</span>
+              </div>
+            </div>
+          </div>
+        </el-popover>
+
         <el-tooltip content="搜索" placement="right">
           <el-button class="tool-btn" @click.stop="handleTool4">
             <span class="icon-svg" v-html="magnifyingGlassIcon"></span>
@@ -116,7 +144,7 @@ const emit = defineEmits<{
 }>();
 
 const mindMapStore = useMindMapStore();
-const { backgroundMode, gradientColors } = storeToRefs(mindMapStore);
+const { backgroundMode, gradientColors, nodeBorderStyle } = storeToRefs(mindMapStore);
 
 // 背景相关状态
 const currentBackgroundMode = ref(backgroundMode.value);
@@ -137,6 +165,23 @@ function handleBackgroundChange(mode: 'dots' | 'grid' | 'gradient') {
   }
 }
 
+// 边框样式相关
+const currentNodeBorderStyle = computed(() => nodeBorderStyle.value);
+
+const borderStyles = [
+  { label: '实线', value: 'none', cssClass: 'preview-solid' },
+  { label: '虚线', value: '5,5', cssClass: 'preview-dashed' },
+  { label: '点线', value: '2,4', cssClass: 'preview-dotted' },
+  { label: '点划线', value: '10,5,2,5', cssClass: 'preview-dash-dot' },
+];
+
+// 边框样式按钮 SVG 图标
+const borderStyleIconSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="14" height="14" rx="2" stroke-dasharray="3,2"/></svg>`;
+
+function handleBorderStyleChange(style: string) {
+  mindMapStore.setNodeBorderStyle(style);
+}
+
 // 更新渐变颜色
 function updateGradient() {
   mindMapStore.setGradientColors(gradientStart.value, gradientEnd.value);
@@ -145,7 +190,7 @@ function updateGradient() {
 // 常量
 const STORAGE_KEY = 'floating-toolbar-position';
 const TOOLBAR_WIDTH = 48;
-const TOOLBAR_HEIGHT = 200;
+const TOOLBAR_HEIGHT = 244;
 const DEFAULT_LEFT = 20;
 const GAP = 10;
 
@@ -530,6 +575,72 @@ onUnmounted(() => {
 
 .gradient-bg {
   background: linear-gradient(135deg, #e8f4f8 0%, #f0e6f6 100%);
+}
+
+/* 边框样式选择面板 */
+.border-style-panel {
+  padding: 16px;
+}
+
+.border-style-options {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.border-option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  transition: all 0.2s;
+}
+
+.border-option:hover {
+  background: #f0f2f5;
+}
+
+.border-option.is-active {
+  background: #ecf5ff;
+}
+
+.border-option.is-active .border-preview {
+  border-color: #409eff;
+}
+
+.border-option span {
+  font-size: 12px;
+  color: #606266;
+}
+
+.border-preview {
+  width: 48px;
+  height: 48px;
+  border-radius: 6px;
+  border: 3px solid #606266;
+  transition: border-color 0.2s;
+  background: #fff;
+  box-shadow: inset 0 0 0 1px #e4e7ed;
+}
+
+.border-preview.preview-solid {
+  border-style: solid;
+}
+
+.border-preview.preview-dashed {
+  border-style: dashed;
+}
+
+.border-preview.preview-dotted {
+  border-style: dotted;
+}
+
+.border-preview.preview-dash-dot {
+  border-style: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48'%3E%3Crect x='1.5' y='1.5' width='45' height='45' rx='5' fill='none' stroke='%23606266' stroke-width='3' stroke-dasharray='10,5,2,5'/%3E%3C/svg%3E");
 }
 
 .gradient-colors {
